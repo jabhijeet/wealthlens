@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(Test-Path *)",
+      "PowerShell(Get-Content *)",
+      "Bash(flutter analyze *)",
+      "PowerShell(flutter analyze *)"
+    ]
+  }
+}

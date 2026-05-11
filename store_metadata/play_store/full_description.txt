@@ -1,0 +1,66 @@
+WealthLens - Your Personal Finance & Investment Portfolio Tracker
+
+Take control of your financial future with WealthLens, the comprehensive personal finance app designed to help you track, manage, and optimize your investments and wealth.
+
+KEY FEATURES:
+
+📊 PORTFOLIO TRACKING
+• Track all your investments in one place - stocks, mutual funds, crypto, FDs, and more
+• Real-time portfolio valuation and performance metrics
+• XIRR-based return calculations for accurate performance measurement
+• Asset allocation analysis with visual breakdowns
+
+💰 INVESTMENT MANAGEMENT
+• Add and manage multiple investment holdings
+• Track systematic investment plans (SIPs) and recurring deposits
+• Monitor fixed deposits, recurring deposits, and PPF accounts
+• Crypto portfolio tracking with cost basis calculations
+
+🤖 AI-POWERLED INSIGHTS
+• Chat with AI to get personalized financial insights
+• Analyze spending patterns and investment opportunities
+• Get smart recommendations for portfolio optimization
+• Document parsing for automatic transaction imports
+
+📈 FINANCIAL CALCULATORS
+• Loan amortization calculator with payment schedules
+• FD/RD maturity calculators
+• PPF calculator with tax implications
+• Rental yield and occupancy tracking
+• Crypto staking rewards projector
+
+🔒 SECURITY & PRIVACY
+• Biometric authentication (Fingerprint/Face ID)
+• End-to-end encryption for sensitive data
+• Local secure storage for financial information
+• Privacy-focused design with no data selling
+
+📰 MARKET INSIGHTS
+• Latest financial news and market updates
+• Curated news from trusted financial sources
+• Stay informed about market trends affecting your portfolio
+
+📤 IMPORT & EXPORT
+• Import transactions from PDF statements
+• OCR technology for document scanning
+• Excel export for tax filing and record keeping
+• Backup and restore functionality
+
+💎 ADDITIONAL FEATURES
+• Multiple currency support with live exchange rates
+• Dark mode for comfortable viewing
+• Customizable dashboard with key metrics
+• Transaction history with detailed filtering
+• Push notifications for important updates
+
+Why choose WealthLens?
+✓ All-in-one finance management
+✓ Privacy-first approach
+✓ No subscription fees
+✓ Works offline with local storage
+✓ Regular updates with new features
+✓ Built with modern Flutter technology
+
+Download WealthLens today and take the first step towards smarter financial management!
+
+Note: WealthLens is a personal finance tool and does not provide financial advice. Always consult with a qualified financial advisor for investment decisions.

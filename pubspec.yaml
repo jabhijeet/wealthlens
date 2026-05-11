@@ -1,0 +1,63 @@
+name: wealthlens
+description: "WealthLens - Personal Finance & Investment Portfolio Tracker"
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.11.4
+
+dependencies:
+  collection: ^1.19.1
+  crypto: ^3.0.7
+  decimal: ^3.2.4
+  dio: ^5.9.2
+  dio_smart_retry: ^7.0.1
+  drift: ^2.31.0
+  encrypt: ^5.0.3
+  equatable: ^2.0.8
+  excel: ^4.0.6
+  file_picker: ^11.0.2
+  fl_chart: ^1.2.0
+  flutter:
+    sdk: flutter
+  flutter_animate: ^4.5.2
+  flutter_local_notifications: ^21.0.0
+  flutter_riverpod: ^3.3.1
+  flutter_secure_storage: ^10.0.0
+  freezed_annotation: ^3.1.0
+  go_router: ^17.2.2
+  google_fonts: ^8.1.0
+  google_mlkit_text_recognition: ^0.15.1
+  http: ^1.0.3
+  image_picker: ^1.2.2
+  intl: ^0.20.2
+  json_annotation: ^4.11.0
+  local_auth: ^3.0.1
+  logger: ^2.7.0
+  package_info_plus: ^9.0.1
+  path: ^1.9.1
+  path_provider: ^2.1.5
+  rational: ^2.2.3
+  riverpod_annotation: ^4.0.2
+  sqlcipher_flutter_libs: ^0.7.0+eol
+  syncfusion_flutter_pdf: ^33.2.4
+  url_launcher: ^6.3.2
+  uuid: ^4.5.3
+  workmanager: ^0.9.0+3
+
+dev_dependencies:
+  build_runner: ^2.14.1
+  drift_dev: ^2.31.0
+  flutter_launcher_icons: ^0.14.3
+  flutter_lints: ^6.0.0
+  flutter_test:
+    sdk: flutter
+  freezed: ^3.2.5
+  json_serializable: ^6.13.0
+  mocktail: ^1.0.5
+  riverpod_generator: ^4.0.3
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/icons/

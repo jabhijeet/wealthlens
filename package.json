@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "code-graph-llm": "^4.19.0"
+  }
+}

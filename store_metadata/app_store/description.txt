@@ -1,0 +1,15 @@
+WealthLens helps you track investments, manage portfolios, and monitor wealth with AI-powered insights.
+
+Track all your investments in one place with support for stocks, mutual funds, crypto, fixed deposits, and more. Get real-time portfolio valuation, XIRR-based return calculations, and asset allocation analysis.
+
+KEY FEATURES:
+• Portfolio tracking with performance metrics
+• AI-powered financial insights and chat
+• Investment calculators (loan, FD/RD, PPF, rental yield)
+• Document scanning and transaction import
+• Biometric security with encryption
+• Market news and updates
+• Multiple currency support
+• Dark mode and customizable dashboard
+
+Privacy-first design with local secure storage. No data selling. Works offline.
