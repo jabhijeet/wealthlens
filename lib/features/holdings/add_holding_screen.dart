@@ -137,14 +137,37 @@ class _AddHoldingScreenState extends ConsumerState<AddHoldingScreen> {
         instrument = _selectedInstrument!;
       }
 
-      final avgCost = double.tryParse(_avgCostController.text) ?? 0.0;
+      final ac = instrument.assetClass;
+      var avgCost = 0.0;
+      var quantity = '1';
+
+      if (_hasStandardQuantityAndPrice(ac)) {
+        avgCost = double.tryParse(_avgCostController.text) ?? 0.0;
+        quantity = _quantityController.text.isNotEmpty ? _quantityController.text : '1';
+      } else if (ac == AssetClass.cash || ac == AssetClass.epf) {
+        quantity = _quantityController.text.isNotEmpty ? _quantityController.text : '0';
+        avgCost = 1.0;
+      } else if (ac.name.contains('realEstate')) {
+        avgCost = double.tryParse(_avgCostController.text) ?? 0.0;
+        quantity = '1';
+      } else if (ac == AssetClass.fixedDeposit || ac == AssetClass.recurringDeposit) {
+        avgCost = double.tryParse(_principalController.text) ?? 0.0;
+        quantity = '1';
+      } else if (ac == AssetClass.ppf) {
+        avgCost = double.tryParse(_ppfContributionController.text) ?? 0.0;
+        quantity = '1';
+      } else if (ac.name.contains('insurance')) {
+        avgCost = double.tryParse(_premiumController.text) ?? 0.0;
+        quantity = '1';
+      }
+
       final holdingId = await holdingDao.insert(
         HoldingsCompanion(
           instrumentId: Value(instrument.id),
           account: Value(
             _accountController.text.isNotEmpty ? _accountController.text : null,
           ),
-          quantity: Value(_quantityController.text),
+          quantity: Value(quantity),
           avgCostMinor: Value((avgCost * 100).round()),
           openedOn: Value(_startDate ?? DateTime.now()),
           notes: Value(
@@ -639,8 +662,31 @@ class _AddHoldingScreenState extends ConsumerState<AddHoldingScreen> {
     );
   }
 
+  bool _hasStandardQuantityAndPrice(AssetClass ac) {
+    return ac == AssetClass.equity ||
+        ac == AssetClass.etf ||
+        ac == AssetClass.mutualFund ||
+        ac == AssetClass.bond ||
+        ac == AssetClass.nps ||
+        ac == AssetClass.cryptoSpot ||
+        ac == AssetClass.cryptoStaked ||
+        ac == AssetClass.cryptoLpToken ||
+        ac == AssetClass.cryptoStablecoin ||
+        ac == AssetClass.cryptoNft ||
+        ac == AssetClass.commodity ||
+        ac == AssetClass.custom ||
+        ac == AssetClass.other;
+  }
+
   List<Widget> _buildBasicFields() {
-    return [
+    final ac = _isCreatingNewInstrument
+        ? _selectedAssetClass
+        : _selectedInstrument!.assetClass;
+    final currency = _isCreatingNewInstrument 
+        ? _selectedCurrency 
+        : _selectedInstrument!.currency;
+
+    final fields = <Widget>[
       TextFormField(
         controller: _accountController,
         decoration: const InputDecoration(
@@ -649,44 +695,76 @@ class _AddHoldingScreenState extends ConsumerState<AddHoldingScreen> {
         ),
       ),
       const SizedBox(height: 16),
-      Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Expanded(
-            flex: 2,
-            child: TextFormField(
-              controller: _quantityController,
-              decoration: const InputDecoration(labelText: 'Quantity'),
-              keyboardType: const TextInputType.numberWithOptions(
-                decimal: true,
+    ];
+
+    if (_hasStandardQuantityAndPrice(ac)) {
+      fields.addAll([
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              flex: 2,
+              child: TextFormField(
+                controller: _quantityController,
+                decoration: InputDecoration(
+                  labelText: ac == AssetClass.bond ? 'Notional' : 'Quantity',
+                ),
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
+                validator: (v) => v?.isEmpty ?? true ? 'Required' : null,
               ),
-              validator: (v) => v?.isEmpty ?? true ? 'Required' : null,
             ),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            flex: 3,
-            child: TextFormField(
-              controller: _avgCostController,
-              decoration: InputDecoration(
-                labelText: 'Avg Cost (${_isCreatingNewInstrument ? _selectedCurrency : _selectedInstrument!.currency})',
-                hintText: 'e.g. 150.25',
+            const SizedBox(width: 16),
+            Expanded(
+              flex: 3,
+              child: TextFormField(
+                controller: _avgCostController,
+                decoration: InputDecoration(
+                  labelText: ac == AssetClass.bond ? 'Price %' : 'Avg Cost ($currency)',
+                  hintText: 'e.g. 150.25',
+                ),
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
+                validator: (v) => v?.isEmpty ?? true ? 'Required' : null,
               ),
-              keyboardType: const TextInputType.numberWithOptions(
-                decimal: true,
-              ),
-              validator: (v) => v?.isEmpty ?? true ? 'Required' : null,
             ),
-          ),
-        ],
-      ),
-      const SizedBox(height: 16),
+          ],
+        ),
+        const SizedBox(height: 16),
+      ]);
+    } else if (ac == AssetClass.cash || ac == AssetClass.epf) {
+      fields.addAll([
+        TextFormField(
+          controller: _quantityController,
+          decoration: InputDecoration(labelText: 'Balance / Amount ($currency)'),
+          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+          validator: (v) => v?.isEmpty ?? true ? 'Required' : null,
+        ),
+        const SizedBox(height: 16),
+      ]);
+    } else if (ac.name.contains('realEstate')) {
+      fields.addAll([
+        TextFormField(
+          controller: _avgCostController,
+          decoration: InputDecoration(labelText: 'Acquisition Cost ($currency)'),
+          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+          validator: (v) => v?.isEmpty ?? true ? 'Required' : null,
+        ),
+        const SizedBox(height: 16),
+      ]);
+    }
+
+    fields.add(
       TextFormField(
         controller: _notesController,
         decoration: const InputDecoration(labelText: 'Notes (Optional)'),
         maxLines: 2,
       ),
-    ];
+    );
+
+    return fields;
   }
 
   bool _isSpecializedAsset() {
