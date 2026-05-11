@@ -404,7 +404,7 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
       }
     }
 
-    final text = PdfTextExtractor(document).extractText();
+    final text = PdfTextExtractor(document).extractText(layoutText: true);
     document.dispose();
 
     setState(() {
@@ -575,15 +575,22 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
       logger.e('LLM processing error', e, stack);
       if (mounted) {
         final errorStr = e.toString();
-        final isAuthError = errorStr.contains('API key') || errorStr.contains('401') || errorStr.contains('Authentication');
-        
+        final isAuthError =
+            errorStr.contains('API key') ||
+            errorStr.contains('401') ||
+            errorStr.contains('Authentication');
+
         messenger.showSnackBar(
           SnackBar(
-            content: Text('Error processing with LLM: ${errorStr.replaceFirst('Exception: ', '')}'),
-            action: isAuthError ? SnackBarAction(
-              label: 'SETTINGS',
-              onPressed: () => context.push('/settings/llm-providers'),
-            ) : null,
+            content: Text(
+              'Error processing with LLM: ${errorStr.replaceFirst('Exception: ', '')}',
+            ),
+            action: isAuthError
+                ? SnackBarAction(
+                    label: 'SETTINGS',
+                    onPressed: () => context.push('/settings/llm-providers'),
+                  )
+                : null,
           ),
         );
       }

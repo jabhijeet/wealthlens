@@ -1,4 +1,4 @@
-package com.example.wealthlens
+package io.github.jabhijeet
 
 import io.flutter.embedding.android.FlutterActivity
 

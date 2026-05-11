@@ -14,7 +14,9 @@ class QuickAddFab extends StatelessWidget {
         final isDark = Theme.of(context).brightness == Brightness.dark;
         return Container(
           decoration: BoxDecoration(
-            color: isDark ? WealthColors.surfaceDark : WealthColors.surfaceLight,
+            color: isDark
+                ? WealthColors.surfaceDark
+                : WealthColors.surfaceLight,
             borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
             boxShadow: [
               BoxShadow(
@@ -36,7 +38,9 @@ class QuickAddFab extends StatelessWidget {
                       width: 40,
                       height: 4,
                       decoration: BoxDecoration(
-                        color: isDark ? WealthColors.borderDark : WealthColors.borderLight,
+                        color: isDark
+                            ? WealthColors.borderDark
+                            : WealthColors.borderLight,
                         borderRadius: BorderRadius.circular(2),
                       ),
                     ),
@@ -120,7 +124,7 @@ class _ActionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    
+
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -129,10 +133,14 @@ class _ActionCard extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: isDark ? WealthColors.cardDarkElevated : WealthColors.cardLight,
+            color: isDark
+                ? WealthColors.cardDarkElevated
+                : WealthColors.cardLight,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
-              color: isDark ? WealthColors.borderDark : WealthColors.borderLight,
+              color: isDark
+                  ? WealthColors.borderDark
+                  : WealthColors.borderLight,
             ),
             boxShadow: [
               if (!isDark)
@@ -174,7 +182,9 @@ class _ActionCard extends StatelessWidget {
               ),
               Icon(
                 Icons.chevron_right_rounded,
-                color: isDark ? WealthColors.textMutedDark : WealthColors.textMuted,
+                color: isDark
+                    ? WealthColors.textMutedDark
+                    : WealthColors.textMuted,
               ),
             ],
           ),

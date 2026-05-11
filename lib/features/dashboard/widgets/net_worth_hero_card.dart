@@ -8,7 +8,7 @@ class _TopMetricsCarousel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 0),
+      padding: EdgeInsets.zero,
       child: _NetWorthCard(
         total: data.totalValueInBaseCurrency,
         summaries: data.currencySummaries,
@@ -86,7 +86,7 @@ class _NetWorthCard extends StatelessWidget {
           Row(
             children: [
               // Column 1: Net Worth
-            Expanded(
+              Expanded(
                 flex: 2,
                 child: Padding(
                   padding: const EdgeInsets.all(12),
@@ -129,15 +129,15 @@ class _NetWorthCard extends StatelessWidget {
                         fit: BoxFit.scaleDown,
                         alignment: Alignment.centerLeft,
                         child: MoneyText(
-                        money: total,
-                        useCompact: true,
-                        style: GoogleFonts.outfit(
-                          fontSize: 19,
-                          fontWeight: FontWeight.w800,
-                          color: Colors.white,
-                          letterSpacing: -0.5,
+                          money: total,
+                          useCompact: true,
+                          style: GoogleFonts.outfit(
+                            fontSize: 19,
+                            fontWeight: FontWeight.w800,
+                            color: Colors.white,
+                            letterSpacing: -0.5,
+                          ),
                         ),
-                      ),
                       ),
                       const SizedBox(height: 4),
                       Text(
@@ -167,7 +167,7 @@ class _NetWorthCard extends StatelessWidget {
                     ? const SizedBox.shrink()
                     : Padding(
                         padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
-                    child: Column(
+                        child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             const SizedBox(height: 16),

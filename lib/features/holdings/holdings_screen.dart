@@ -71,11 +71,7 @@ class _HoldingsScreenState extends ConsumerState<HoldingsScreen> {
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
-                      const Row(
-                        children: [
-                          LlmStatusBox(),
-                        ],
-                      ),
+                      const Row(children: [LlmStatusBox()]),
                     ],
                   ),
                 ),
@@ -173,10 +169,14 @@ class _HoldingsScreenState extends ConsumerState<HoldingsScreen> {
                       child: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 12),
                         decoration: BoxDecoration(
-                          color: isDark ? WealthColors.cardDark : Colors.grey[100],
+                          color: isDark
+                              ? WealthColors.cardDark
+                              : Colors.grey[100],
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
-                            color: isDark ? WealthColors.borderDark : WealthColors.borderLight,
+                            color: isDark
+                                ? WealthColors.borderDark
+                                : WealthColors.borderLight,
                           ),
                         ),
                         child: DropdownButtonHideUnderline(
@@ -185,27 +185,44 @@ class _HoldingsScreenState extends ConsumerState<HoldingsScreen> {
                             value: _filterCountry,
                             hint: Text(
                               'All Countries',
-                              style: GoogleFonts.sora(fontSize: 12, fontWeight: FontWeight.w600),
+                              style: GoogleFonts.sora(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
                             icon: const Icon(Icons.arrow_drop_down, size: 20),
                             items: [
                               DropdownMenuItem<String?>(
-                                child: Text('All Countries', style: GoogleFonts.sora(fontSize: 12)),
+                                child: Text(
+                                  'All Countries',
+                                  style: GoogleFonts.sora(fontSize: 12),
+                                ),
                               ),
                               // Generate unique countries from holdings
-                              ...holdingsAsync.maybeWhen(
-                                data: (holdings) => holdings
-                                    .map((h) => h.instrument.country.name)
-                                    .toSet()
-                                    .toList()
-                                    ..sort(),
-                                orElse: () => <String>[],
-                              ).map((c) => DropdownMenuItem<String?>(
-                                    value: c,
-                                    child: Text(c, style: GoogleFonts.sora(fontSize: 12)),
-                                  )),
+                              ...holdingsAsync
+                                  .maybeWhen(
+                                    data: (holdings) =>
+                                        holdings
+                                            .map(
+                                              (h) => h.instrument.country.name,
+                                            )
+                                            .toSet()
+                                            .toList()
+                                          ..sort(),
+                                    orElse: () => <String>[],
+                                  )
+                                  .map(
+                                    (c) => DropdownMenuItem<String?>(
+                                      value: c,
+                                      child: Text(
+                                        c,
+                                        style: GoogleFonts.sora(fontSize: 12),
+                                      ),
+                                    ),
+                                  ),
                             ],
-                            onChanged: (val) => setState(() => _filterCountry = val),
+                            onChanged: (val) =>
+                                setState(() => _filterCountry = val),
                           ),
                         ),
                       ),
@@ -215,10 +232,14 @@ class _HoldingsScreenState extends ConsumerState<HoldingsScreen> {
                       child: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 12),
                         decoration: BoxDecoration(
-                          color: isDark ? WealthColors.cardDark : Colors.grey[100],
+                          color: isDark
+                              ? WealthColors.cardDark
+                              : Colors.grey[100],
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
-                            color: isDark ? WealthColors.borderDark : WealthColors.borderLight,
+                            color: isDark
+                                ? WealthColors.borderDark
+                                : WealthColors.borderLight,
                           ),
                         ),
                         child: DropdownButtonHideUnderline(
@@ -227,27 +248,42 @@ class _HoldingsScreenState extends ConsumerState<HoldingsScreen> {
                             value: _filterCurrency,
                             hint: Text(
                               'All Currencies',
-                              style: GoogleFonts.sora(fontSize: 12, fontWeight: FontWeight.w600),
+                              style: GoogleFonts.sora(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
                             icon: const Icon(Icons.arrow_drop_down, size: 20),
                             items: [
                               DropdownMenuItem<String?>(
-                                child: Text('All Currencies', style: GoogleFonts.sora(fontSize: 12)),
+                                child: Text(
+                                  'All Currencies',
+                                  style: GoogleFonts.sora(fontSize: 12),
+                                ),
                               ),
                               // Generate unique currencies from holdings
-                              ...holdingsAsync.maybeWhen(
-                                data: (holdings) => holdings
-                                    .map((h) => h.instrument.currency)
-                                    .toSet()
-                                    .toList()
-                                    ..sort(),
-                                orElse: () => <String>[],
-                              ).map((c) => DropdownMenuItem<String?>(
-                                    value: c,
-                                    child: Text(c, style: GoogleFonts.sora(fontSize: 12)),
-                                  )),
+                              ...holdingsAsync
+                                  .maybeWhen(
+                                    data: (holdings) =>
+                                        holdings
+                                            .map((h) => h.instrument.currency)
+                                            .toSet()
+                                            .toList()
+                                          ..sort(),
+                                    orElse: () => <String>[],
+                                  )
+                                  .map(
+                                    (c) => DropdownMenuItem<String?>(
+                                      value: c,
+                                      child: Text(
+                                        c,
+                                        style: GoogleFonts.sora(fontSize: 12),
+                                      ),
+                                    ),
+                                  ),
                             ],
-                            onChanged: (val) => setState(() => _filterCurrency = val),
+                            onChanged: (val) =>
+                                setState(() => _filterCurrency = val),
                           ),
                         ),
                       ),
@@ -323,7 +359,12 @@ class _HoldingsScreenState extends ConsumerState<HoldingsScreen> {
                                 assetClass: ac,
                                 count: grouped[ac]!.length,
                                 totalInBase: grouped[ac]!.fold<Money>(
-                                  Money(minor: 0, currency: ref.watch(selectedCurrencyProvider)),
+                                  Money(
+                                    minor: 0,
+                                    currency: ref.watch(
+                                      selectedCurrencyProvider,
+                                    ),
+                                  ),
                                   (sum, item) => sum + item.valueInBase,
                                 ),
                               ),
@@ -355,13 +396,17 @@ class _HoldingsScreenState extends ConsumerState<HoldingsScreen> {
                                       if (!context.mounted) return false;
                                       final result = await showDialog<bool>(
                                         context: context,
-                                        builder: (context) => AddTransactionDialog(
-                                          holdingId: item.holding.id,
-                                          currency: item.instrument.currency,
-                                        ),
+                                        builder: (context) =>
+                                            AddTransactionDialog(
+                                              holdingId: item.holding.id,
+                                              currency:
+                                                  item.instrument.currency,
+                                            ),
                                       );
                                       if (result == true) {
-                                        ref.invalidate(holdingsMarketDataProvider);
+                                        ref.invalidate(
+                                          holdingsMarketDataProvider,
+                                        );
                                       }
                                       return false;
                                     } else {

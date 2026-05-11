@@ -92,7 +92,9 @@ class _GlobalSearchScreenState extends ConsumerState<GlobalSearchScreen> {
     final allHoldingsAsync = ref.watch(holdingsWithInstrumentsProvider);
 
     return Scaffold(
-      backgroundColor: isDark ? WealthColors.surfaceDark : WealthColors.surfaceLight,
+      backgroundColor: isDark
+          ? WealthColors.surfaceDark
+          : WealthColors.surfaceLight,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -139,8 +141,8 @@ class _GlobalSearchScreenState extends ConsumerState<GlobalSearchScreen> {
                   Text(
                     'Search for your holdings or explore the market',
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: WealthColors.textMuted,
-                        ),
+                      color: WealthColors.textMuted,
+                    ),
                   ),
                 ],
               ),
@@ -150,74 +152,119 @@ class _GlobalSearchScreenState extends ConsumerState<GlobalSearchScreen> {
                 allHoldingsAsync.when(
                   data: (holdings) {
                     final filteredHoldings = holdings.where((h) {
-                      final nameMatch = h.instrument.name.toLowerCase().contains(_searchQuery.toLowerCase());
-                      final symbolMatch = h.instrument.symbol?.toLowerCase().contains(_searchQuery.toLowerCase()) ?? false;
+                      final nameMatch = h.instrument.name
+                          .toLowerCase()
+                          .contains(_searchQuery.toLowerCase());
+                      final symbolMatch =
+                          h.instrument.symbol?.toLowerCase().contains(
+                            _searchQuery.toLowerCase(),
+                          ) ??
+                          false;
                       return nameMatch || symbolMatch;
                     }).toList();
 
-                    if (filteredHoldings.isEmpty) return const SliverToBoxAdapter(child: SizedBox.shrink());
+                    if (filteredHoldings.isEmpty) {
+                      return const SliverToBoxAdapter(child: SizedBox.shrink());
+                    }
 
                     return SliverList(
-                      delegate: SliverChildBuilderDelegate(
-                        (context, index) {
-                          if (index == 0) {
-                            return _buildSectionHeader('Your Holdings');
-                          }
-                          final holding = filteredHoldings[index - 1];
-                          return ListTile(
-                            leading: Container(
-                              padding: const EdgeInsets.all(8),
-                              decoration: BoxDecoration(
-                                color: WealthColors.primary.withValues(alpha: 0.1),
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              child: const Icon(Icons.account_balance_wallet_rounded, color: WealthColors.primary, size: 20),
-                            ),
-                            title: Text(holding.instrument.name, style: const TextStyle(fontWeight: FontWeight.w600)),
-                            subtitle: Text('${holding.instrument.symbol ?? 'No Symbol'} • Qty: ${holding.holding.quantity}', style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
-                            onTap: () => context.push('/holdings/${holding.holding.id}'),
-                          );
-                        },
-                        childCount: filteredHoldings.length + 1,
-                      ),
-                    );
-                  },
-                  loading: () => const SliverToBoxAdapter(child: SizedBox.shrink()),
-                  error: (e, s) => const SliverToBoxAdapter(child: SizedBox.shrink()),
-                ),
-
-                if (_onlineResults.isNotEmpty)
-                  SliverList(
-                    delegate: SliverChildBuilderDelegate(
-                      (context, index) {
+                      delegate: SliverChildBuilderDelegate((context, index) {
                         if (index == 0) {
-                          return _buildSectionHeader('Market Results');
+                          return _buildSectionHeader('Your Holdings');
                         }
-                        final result = _onlineResults[index - 1] as Map<String, dynamic>;
-                        final symbol = result['symbol']?.toString() ?? '';
-                        final shortname = result['shortname']?.toString() ?? result['longname']?.toString() ?? 'Unknown';
-                        final typeDisp = result['typeDisp']?.toString() ?? '';
-                        final exchDisp = result['exchDisp']?.toString() ?? '';
-
+                        final holding = filteredHoldings[index - 1];
                         return ListTile(
                           leading: Container(
                             padding: const EdgeInsets.all(8),
                             decoration: BoxDecoration(
-                              color: WealthColors.success.withValues(alpha: 0.1),
+                              color: WealthColors.primary.withValues(
+                                alpha: 0.1,
+                              ),
                               borderRadius: BorderRadius.circular(10),
                             ),
-                            child: const Icon(Icons.public_rounded, color: WealthColors.success, size: 20),
+                            child: const Icon(
+                              Icons.account_balance_wallet_rounded,
+                              color: WealthColors.primary,
+                              size: 20,
+                            ),
                           ),
-                          title: Text(shortname, style: const TextStyle(fontWeight: FontWeight.w600)),
-                          subtitle: Text('$symbol • $typeDisp • $exchDisp', style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
-                          trailing: const Icon(Icons.add_circle_outline_rounded, color: WealthColors.primary),
-                          onTap: () {
-                            _createAndAddHolding(context, shortname, symbol, typeDisp);
-                          },
+                          title: Text(
+                            holding.instrument.name,
+                            style: const TextStyle(fontWeight: FontWeight.w600),
+                          ),
+                          subtitle: Text(
+                            '${holding.instrument.symbol ?? 'No Symbol'} • Qty: ${holding.holding.quantity}',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey.shade600,
+                            ),
+                          ),
+                          onTap: () =>
+                              context.push('/holdings/${holding.holding.id}'),
                         );
-                      },
-                      childCount: _onlineResults.length + 1,
-                    ),
+                      }, childCount: filteredHoldings.length + 1),
+                    );
+                  },
+                  loading: () =>
+                      const SliverToBoxAdapter(child: SizedBox.shrink()),
+                  error: (e, s) =>
+                      const SliverToBoxAdapter(child: SizedBox.shrink()),
+                ),
+
+                if (_onlineResults.isNotEmpty)
+                  SliverList(
+                    delegate: SliverChildBuilderDelegate((context, index) {
+                      if (index == 0) {
+                        return _buildSectionHeader('Market Results');
+                      }
+                      final result =
+                          _onlineResults[index - 1] as Map<String, dynamic>;
+                      final symbol = result['symbol']?.toString() ?? '';
+                      final shortname =
+                          result['shortname']?.toString() ??
+                          result['longname']?.toString() ??
+                          'Unknown';
+                      final typeDisp = result['typeDisp']?.toString() ?? '';
+                      final exchDisp = result['exchDisp']?.toString() ?? '';
+
+                      return ListTile(
+                        leading: Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: WealthColors.success.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: const Icon(
+                            Icons.public_rounded,
+                            color: WealthColors.success,
+                            size: 20,
+                          ),
+                        ),
+                        title: Text(
+                          shortname,
+                          style: const TextStyle(fontWeight: FontWeight.w600),
+                        ),
+                        subtitle: Text(
+                          '$symbol • $typeDisp • $exchDisp',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey.shade600,
+                          ),
+                        ),
+                        trailing: const Icon(
+                          Icons.add_circle_outline_rounded,
+                          color: WealthColors.primary,
+                        ),
+                        onTap: () {
+                          _createAndAddHolding(
+                            context,
+                            shortname,
+                            symbol,
+                            typeDisp,
+                          );
+                        },
+                      );
+                    }, childCount: _onlineResults.length + 1),
                   ),
 
                 if (_isSearchingOnline)
@@ -263,7 +310,12 @@ class _GlobalSearchScreenState extends ConsumerState<GlobalSearchScreen> {
     return Country.usa;
   }
 
-  void _createAndAddHolding(BuildContext context, String name, String symbol, String typeDisp) {
+  void _createAndAddHolding(
+    BuildContext context,
+    String name,
+    String symbol,
+    String typeDisp,
+  ) {
     showDialog<void>(
       context: context,
       builder: (context) => CreateInstrumentDialog(
@@ -281,8 +333,9 @@ class _GlobalSearchScreenState extends ConsumerState<GlobalSearchScreen> {
 }
 
 // Provider to get all holdings with instruments
-final holdingsWithInstrumentsProvider = FutureProvider<List<HoldingWithInstrument>>((ref) async {
-  final holdingDao = ref.read(holdingDaoProvider);
-  final allHoldings = await holdingDao.getAllWithInstruments();
-  return allHoldings;
-});
+final holdingsWithInstrumentsProvider =
+    FutureProvider<List<HoldingWithInstrument>>((ref) async {
+      final holdingDao = ref.read(holdingDaoProvider);
+      final allHoldings = await holdingDao.getAllWithInstruments();
+      return allHoldings;
+    });

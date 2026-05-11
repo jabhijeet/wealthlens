@@ -22,7 +22,8 @@ class InstrumentPicker extends ConsumerStatefulWidget {
     String? symbol,
     AssetClass? assetClass,
     Country? country,
-  })? onCreateCustom;
+  })?
+  onCreateCustom;
 
   @override
   ConsumerState<InstrumentPicker> createState() => _InstrumentPickerState();
@@ -145,20 +146,24 @@ class _InstrumentPickerState extends ConsumerState<InstrumentPicker> {
 
                   // 1. Create New Custom Instrument Button (Prominent & At Top)
                   if (index == currentIndex) {
-                    final isDark = Theme.of(context).brightness == Brightness.dark;
+                    final isDark =
+                        Theme.of(context).brightness == Brightness.dark;
                     return Padding(
                       padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
                       child: InkWell(
                         onTap: () {
                           if (widget.onCreateCustom != null) {
                             widget.onCreateCustom!(
-                              name: _searchQuery.isNotEmpty ? _searchQuery : null,
+                              name: _searchQuery.isNotEmpty
+                                  ? _searchQuery
+                                  : null,
                             );
                           } else {
                             _showCreateInstrumentDialog(
                               context,
-                              prefilledName:
-                                  _searchQuery.isNotEmpty ? _searchQuery : null,
+                              prefilledName: _searchQuery.isNotEmpty
+                                  ? _searchQuery
+                                  : null,
                             );
                           }
                         },
@@ -168,8 +173,14 @@ class _InstrumentPickerState extends ConsumerState<InstrumentPicker> {
                           decoration: BoxDecoration(
                             gradient: LinearGradient(
                               colors: isDark
-                                  ? [const Color(0xFF3A3A3C), const Color(0xFF1C1C1E)]
-                                  : [const Color(0xFFE8EAF6), const Color(0xFFC5CAE9)],
+                                  ? [
+                                      const Color(0xFF3A3A3C),
+                                      const Color(0xFF1C1C1E),
+                                    ]
+                                  : [
+                                      const Color(0xFFE8EAF6),
+                                      const Color(0xFFC5CAE9),
+                                    ],
                               begin: Alignment.topLeft,
                               end: Alignment.bottomRight,
                             ),
@@ -193,7 +204,9 @@ class _InstrumentPickerState extends ConsumerState<InstrumentPicker> {
                                 decoration: BoxDecoration(
                                   color: Colors.blue.withValues(alpha: 0.15),
                                   shape: BoxShape.circle,
-                                  border: Border.all(color: Colors.blue.withValues(alpha: 0.3)),
+                                  border: Border.all(
+                                    color: Colors.blue.withValues(alpha: 0.3),
+                                  ),
                                 ),
                                 child: const Icon(
                                   Icons.add_circle_outline_rounded,
@@ -212,7 +225,9 @@ class _InstrumentPickerState extends ConsumerState<InstrumentPicker> {
                                         fontWeight: FontWeight.w900,
                                         fontSize: 18,
                                         letterSpacing: -0.5,
-                                        color: isDark ? Colors.white : Colors.blue.shade900,
+                                        color: isDark
+                                            ? Colors.white
+                                            : Colors.blue.shade900,
                                       ),
                                     ),
                                     const SizedBox(height: 4),
@@ -223,7 +238,9 @@ class _InstrumentPickerState extends ConsumerState<InstrumentPicker> {
                                       style: GoogleFonts.sora(
                                         fontSize: 13,
                                         fontWeight: FontWeight.w500,
-                                        color: isDark ? Colors.white70 : Colors.blue.shade700,
+                                        color: isDark
+                                            ? Colors.white70
+                                            : Colors.blue.shade700,
                                       ),
                                     ),
                                   ],
@@ -231,7 +248,9 @@ class _InstrumentPickerState extends ConsumerState<InstrumentPicker> {
                               ),
                               Icon(
                                 Icons.chevron_right_rounded,
-                                color: isDark ? Colors.white38 : Colors.blue.shade300,
+                                color: isDark
+                                    ? Colors.white38
+                                    : Colors.blue.shade300,
                               ),
                             ],
                           ),
@@ -269,7 +288,9 @@ class _InstrumentPickerState extends ConsumerState<InstrumentPicker> {
                         ),
                         title: Text(
                           instrument.name,
-                          style: GoogleFonts.outfit(fontWeight: FontWeight.w600),
+                          style: GoogleFonts.outfit(
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                         subtitle: Text(
                           '${instrument.symbol ?? 'No Symbol'} • ${instrument.assetClass.name.replaceAll('_', ' ').toUpperCase()}',
@@ -331,7 +352,9 @@ class _InstrumentPickerState extends ConsumerState<InstrumentPicker> {
                         ),
                         title: Text(
                           shortname,
-                          style: GoogleFonts.outfit(fontWeight: FontWeight.w600),
+                          style: GoogleFonts.outfit(
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                         subtitle: Text(
                           '$symbol • $typeDisp • $exchDisp',
@@ -361,7 +384,9 @@ class _InstrumentPickerState extends ConsumerState<InstrumentPicker> {
                               prefilledAssetClass: _mapYahooTypeToAssetClass(
                                 typeDisp,
                               ),
-                              prefilledCountry: _mapYahooSuffixToCountry(symbol),
+                              prefilledCountry: _mapYahooSuffixToCountry(
+                                symbol,
+                              ),
                             );
                           }
                         },
@@ -618,9 +643,7 @@ class _CreateInstrumentDialogState
                   ),
                   child: Text(
                     'Create Instrument',
-                    style: GoogleFonts.outfit(
-                      fontWeight: FontWeight.w700,
-                    ),
+                    style: GoogleFonts.outfit(fontWeight: FontWeight.w700),
                   ),
                 ),
               ],

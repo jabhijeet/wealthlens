@@ -9,7 +9,6 @@ import '../logging/error_handler.dart';
 import '../../features/holdings/models/holding_with_instrument.dart';
 import '../../models/insights.dart';
 
-
 class InsightsService {
   InsightsService({
     required HoldingDao holdingDao,
@@ -575,7 +574,11 @@ Provide key recommendations and summarize the portfolio's current state. Make th
           task: LlmTask.insights,
         );
       } catch (e, stack) {
-        errorHandler.handleError(e, context: 'Detailed Analysis LLM Error', stackTrace: stack);
+        errorHandler.handleError(
+          e,
+          context: 'Detailed Analysis LLM Error',
+          stackTrace: stack,
+        );
         rethrow;
       }
     }
@@ -613,14 +616,24 @@ final portfolioInsightsProvider = FutureProvider<List<PortfolioInsight>>((
   ref,
 ) async {
   // Watch holdings to ensure insights refresh when data changes
-  ref.watch<AsyncValue<List<HoldingWithInstrument>>>(holdingsWithInstrumentsProvider);
+  ref.watch<AsyncValue<List<HoldingWithInstrument>>>(
+    holdingsWithInstrumentsProvider,
+  );
   final service = ref.watch(insightsServiceProvider);
   return service.generateInsights();
 });
 
-
 class DetailedAnalysisNotifier extends Notifier<DetailedAnalysisState> {
-  int? _lastHoldingCount;
+  String? _lastHoldingsHash;
+
+  String _computeHash(List<HoldingWithInstrument> holdings) {
+    return holdings
+        .map(
+          (h) =>
+              '${h.holding.id}:${h.holding.quantity}:${h.holding.avgCostMinor}',
+        )
+        .join('|');
+  }
 
   @override
   DetailedAnalysisState build() {
@@ -628,16 +641,16 @@ class DetailedAnalysisNotifier extends Notifier<DetailedAnalysisState> {
     ref
       ..listen(holdingsWithInstrumentsProvider, (previous, next) {
         if (next.hasValue && next.value != null) {
-          final currentCount = next.value!.length;
+          final currentHash = _computeHash(next.value!);
 
-          // Only trigger if holdings count strictly increased
-          if (_lastHoldingCount != null && currentCount > _lastHoldingCount!) {
+          // Only trigger if holdings actually updated (hash changed) and it's not the first load
+          if (_lastHoldingsHash != null && currentHash != _lastHoldingsHash) {
             final insights = ref.read(portfolioInsightsProvider).value;
             if (insights != null && insights.isNotEmpty) {
               generate(insights, force: true);
             }
           }
-          _lastHoldingCount = currentCount;
+          _lastHoldingsHash = currentHash;
         }
       })
       ..listen(portfolioInsightsProvider, (previous, next) {
@@ -648,18 +661,27 @@ class DetailedAnalysisNotifier extends Notifier<DetailedAnalysisState> {
         }
       }, fireImmediately: true);
 
-    // Initialize _lastHoldingCount
+    // Initialize _lastHoldingsHash
     final holdings = ref.read(holdingsWithInstrumentsProvider).value;
     if (holdings != null) {
-      _lastHoldingCount = holdings.length;
+      _lastHoldingsHash = _computeHash(holdings);
     }
 
     return DetailedAnalysisState();
   }
 
-  Future<void> generate(List<PortfolioInsight> insights, {bool force = false}) async {
+  Future<void> generate(
+    List<PortfolioInsight> insights, {
+    bool force = false,
+  }) async {
     if (state.isGenerating) return;
     if (!force && state.analysis.isNotEmpty && state.error == null) return;
+
+    final provider = ref.read(activeLlmProvider);
+    if (provider != null && !provider.isConfigured) {
+      state = state.copyWith(error: 'LLM API key not configured.');
+      return;
+    }
 
     state = state.copyWith(isGenerating: true, clearError: true);
 
@@ -676,10 +698,7 @@ class DetailedAnalysisNotifier extends Notifier<DetailedAnalysisState> {
         lastGenerated: DateTime.now(),
       );
     } catch (e) {
-      state = state.copyWith(
-        isGenerating: false,
-        error: e.toString(),
-      );
+      state = state.copyWith(isGenerating: false, error: e.toString());
     }
   }
 }

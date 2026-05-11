@@ -2,7 +2,7 @@
 // Document parsing prompts for extracting holdings and transactions from text
 
 class DocumentParsingPrompts {
-  static const String version = '1.0.0';
+  static const String version = '1.1.0';
 
   /// Prompt for extracting holdings from brokerage statements, PDFs, etc.
   /// Expects JSON array of holdings.
@@ -16,34 +16,32 @@ Each object should have these fields:
 - "quantity": number (e.g., 10.5 for fractional shares)
 - "averagePrice": number (per-unit cost in original currency)
 - "currency": string (3-letter ISO code: USD, INR, SGD, etc.)
-- "assetClass": string (one of: "equity", "etf", "mutual_fund", "bond", "fd", "rd", "ppf", "insurance", "crypto", "real_estate")
-- "country": string (one of: "IN", "US", "SG", "other")
+- "assetClass": string (MUST be one of: "equity", "etf", "mutualFund", "bond", "fixedDeposit", "recurringDeposit", "ppf", "epf", "nps", "insuranceTerm", "insuranceEndowment", "insuranceUlip", "cryptoSpot", "realEstateLand", "cash", "commodity", "other")
+- "country": string (MUST be one of: "india", "usa", "singapore", "uk", "other")
 - "exchange": optional string (e.g., "NSE", "BSE", "NASDAQ", "NYSE")
 - "isin": optional string (for stocks/ETFs)
 - "folioNumber": optional string (for mutual funds)
-- "accountNumber": optional string (for FD/RD/insurance)
+- "accountNumber": optional string (for FD/RD/insurance/PPF)
 - "maturityDate": optional string (YYYY-MM-DD format for FD/RD/bonds)
 - "interestRate": optional number (for FD/RD/bonds, as percentage)
 - "purchaseDate": optional string (YYYY-MM-DD, when the security was bought)
 - "latestPrice": optional number (current market price if shown)
-- "notionalValue": optional number (current total value of position)
+- "notionalValue": optional number (current total value of position, quantity * latestPrice)
 
 Rules:
 1. If quantity is not specified but value is, infer quantity = value / price if price is known.
-2. For mutual funds, use "mutual_fund" assetClass.
-3. For fixed deposits, use "fd" assetClass.
-4. For recurring deposits, use "rd" assetClass.
+2. For mutual funds, use "mutualFund" assetClass.
+3. For fixed deposits, use "fixedDeposit" assetClass.
+4. For recurring deposits, use "recurringDeposit" assetClass.
 5. For PPF, use "ppf" assetClass.
-6. For insurance policies, use "insurance" assetClass.
-7. For crypto, use "crypto" assetClass.
-8. For real estate, use "real_estate" assetClass.
-9. If country is India, default exchange to "NSE" for equities.
-10. If country is USA, default exchange to "NASDAQ" for tech stocks, "NYSE" otherwise.
-11. Parse dates in DD/MM/YYYY, MM/DD/YYYY, or YYYY-MM-DD formats.
-12. "Portfolio composition" sections tell overall portfolio assetclasses and value.
-13. "Consolidated Account Statement" tells details about current account, while "Summary" gives detail of all accounts in brief.
-14. Treat "latest portfolio positions" as holdings.
-15. Map "no of shares" to quantity.
+6. For crypto, use "cryptoSpot" assetClass.
+7. If country is India, use "india", for USA use "usa".
+8. Parse dates in DD/MM/YYYY, MM/DD/YYYY, or YYYY-MM-DD formats and return ONLY YYYY-MM-DD.
+9. Ensure numeric values do not contain commas.
+10. "Portfolio composition" sections tell overall portfolio assetclasses and value.
+11. "Consolidated Account Statement" tells details about current account, while "Summary" gives detail of all accounts in brief.
+12. Treat "latest portfolio positions" as holdings.
+13. Map "no of shares" or "units" to quantity.
 
 Example output:
 [
@@ -54,8 +52,9 @@ Example output:
     "averagePrice": 175.50,
     "currency": "USD",
     "assetClass": "equity",
-    "country": "US",
-    "exchange": "NASDAQ"
+    "country": "usa",
+    "exchange": "NASDAQ",
+    "notionalValue": 4387.50
   },
   {
     "symbol": "INFY.NS",
@@ -64,7 +63,7 @@ Example output:
     "averagePrice": 1500.75,
     "currency": "INR",
     "assetClass": "equity",
-    "country": "IN",
+    "country": "india",
     "exchange": "NSE"
   }
 ]
@@ -76,15 +75,15 @@ Now extract holdings from this text:
   /// Prompt for extracting transactions (buys, sells, dividends, etc.)
   static const String transactionsExtractionPrompt = '''
 You are a financial transaction extraction assistant. Extract transactions from the provided text.
-Return ONLY a valid JSON array of objects, no other text.
+Return ONLY a valid JSON array of objects, no other text. Ensure all keys are strings in double quotes.
 
 Each object should have these fields:
-- "type": string (one of: "buy", "sell", "dividend", "interest", "redemption", "premium_payment", "maturity", "transfer_in", "transfer_out")
+- "type": string (MUST be one of: "buy", "sell", "dividend", "interest", "fee", "contribution", "withdrawal", "bonus", "premiumPaid", "claimReceived", "surrenderPayout")
 - "symbol": optional string (for equity/ETF/mutual fund transactions)
 - "name": string (security name or description)
 - "quantity": optional number (for buy/sell transactions)
 - "price": optional number (per-unit price in original currency)
-- "amount": number (total transaction amount, positive for inflows, negative for outflows)
+- "amount": number (total transaction amount, absolute value)
 - "currency": string (3-letter ISO code)
 - "date": string (YYYY-MM-DD format)
 - "fee": optional number (transaction fees/taxes)
@@ -92,14 +91,15 @@ Each object should have these fields:
 
 Rules:
 1. For dividends and interest, type should be "dividend" or "interest".
-2. For mutual fund SIP purchases, type is "buy".
-3. For insurance premium payments, type is "premium_payment".
-4. For FD/RD maturity, type is "maturity".
-5. Parse dates in any common format and convert to YYYY-MM-DD.
-6. If amount is not explicitly stated but quantity and price are, calculate amount = quantity * price.
-7. For sells, amount should be positive (inflow). For buys, amount should be negative (outflow).
+2. For mutual fund SIP purchases or investments, type is "buy".
+3. For redemptions or selling, type is "sell".
+4. For insurance premium payments, type is "premiumPaid".
+5. For FD/RD maturity, type is "withdrawal".
+6. Parse dates in any common format and convert to YYYY-MM-DD.
+7. If amount is not explicitly stated but quantity and price are, calculate amount = quantity * price.
 8. Treat "latest transactions" as transactions.
-9. Map "no of shares" to quantity.
+9. Map "no of shares" or "units" to quantity.
+10. Numeric values must not contain commas.
 
 Example output:
 [
@@ -109,7 +109,7 @@ Example output:
     "name": "Apple Inc.",
     "quantity": 10,
     "price": 175.50,
-    "amount": -1755.00,
+    "amount": 1755.00,
     "currency": "USD",
     "date": "2024-01-15",
     "fee": 1.50
@@ -140,17 +140,16 @@ The JSON object should have these fields:
 - "periodStart": optional string (YYYY-MM-DD)
 - "periodEnd": optional string (YYYY-MM-DD)
 - "statementDate": optional string (YYYY-MM-DD)
-- "totalValue": optional number (total portfolio value if mentioned)
-- "currency": optional string (primary currency of document)
+- "totalValue": optional number (total portfolio value or total balance if mentioned)
+- "currency": optional string (primary currency of document, 3-letter code)
 - "containsHoldings": boolean
 - "containsTransactions": boolean
 
 Rules:
 1. Infer institution from logos, headers, or sender information.
 2. Look for date ranges like "Statement Period: Jan 1, 2024 - Jan 31, 2024".
-3. If total portfolio value is mentioned, extract it.
-4. Determine if the document contains holdings (positions) and/or transactions (activity).
-5. "Consolidated Account Statement" tells details about current account, while "Summary" gives detail of all accounts in brief.
+3. If total portfolio value, total asset value, or net worth is mentioned, extract it as totalValue (without commas).
+4. Determine if the document contains holdings (positions/balances) and/or transactions (activity/ledger).
 
 Example output:
 {
@@ -182,6 +181,7 @@ The JSON object must have three main sections:
    - "institution": string (bank/broker name)
    - "accountNumber": optional string
    - "statementDate": optional string (YYYY-MM-DD)
+   - "totalValue": optional number (total portfolio value)
    - "currency": string (3-letter ISO code)
 
 2. "holdings": An array of objects, each with:
@@ -190,14 +190,14 @@ The JSON object must have three main sections:
    - "quantity": number
    - "averagePrice": number
    - "currency": string
-   - "assetClass": string (equity, etf, mutual_fund, bond, fd, rd, ppf, insurance, crypto, real_estate)
-   - "country": string (IN, US, SG, other)
+   - "assetClass": string (MUST be: equity, etf, mutualFund, bond, fixedDeposit, recurringDeposit, ppf, epf, nps, insuranceTerm, cryptoSpot, realEstateLand, cash, commodity)
+   - "country": string (india, usa, singapore, uk, other)
    - "purchaseDate": optional string (YYYY-MM-DD)
    - "latestPrice": optional number
-   - "notionalValue": optional number
+   - "notionalValue": optional number (total value of this holding)
 
 3. "transactions": An array of objects, each with:
-   - "type": string (buy, sell, dividend, interest, redemption, premium_payment, maturity)
+   - "type": string (buy, sell, dividend, interest, withdrawal, premiumPaid)
    - "name": string
    - "quantity": optional number
    - "price": optional number
@@ -207,14 +207,8 @@ The JSON object must have three main sections:
 
 Rules:
 1. Extract data as accurately as possible from the visual text in the image.
-2. If a field is missing, omit it or set to null.
-3. For mutual funds, use "mutual_fund" assetClass.
-4. For FD/RD, use "fd" or "rd" assetClass.
-5. "Portfolio composition" sections tell overall portfolio assetclasses and value.
-6. "Consolidated Account Statement" tells details about current account, while "Summary" gives detail of all accounts in brief.
-7. Treat "latest portfolio positions" as holdings.
-8. Map "no of shares" to quantity.
-9. Treat "latest transactions" as transactions.
-10. Return ONLY the JSON object. Do not include markdown code blocks or explanations.
+2. If a field is missing, omit it or set to null. Numbers should not contain commas.
+3. For mutual funds, use "mutualFund" assetClass. For FD/RD, use "fixedDeposit" or "recurringDeposit".
+4. Return ONLY the JSON object. Do not include markdown code blocks.
 ''';
 }

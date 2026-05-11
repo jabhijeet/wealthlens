@@ -130,20 +130,15 @@ class ShellScaffold extends StatelessWidget {
 }
 
 class _CustomFloatingActionButtonLocation extends FloatingActionButtonLocation {
-  final FloatingActionButtonLocation location;
-  final double offsetX;
-  final double offsetY;
+  const _CustomFloatingActionButtonLocation(this.location, {this.offsetY = 0});
 
-  const _CustomFloatingActionButtonLocation(
-    this.location, {
-    this.offsetX = 0,
-    this.offsetY = 0,
-  });
+  final FloatingActionButtonLocation location;
+  final double offsetY;
 
   @override
   Offset getOffset(ScaffoldPrelayoutGeometry scaffoldGeometry) {
-    final Offset offset = location.getOffset(scaffoldGeometry);
-    return Offset(offset.dx + offsetX, offset.dy + offsetY);
+    final offset = location.getOffset(scaffoldGeometry);
+    return Offset(offset.dx, offset.dy + offsetY);
   }
 }
 

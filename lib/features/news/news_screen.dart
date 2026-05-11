@@ -31,16 +31,22 @@ class _NewsScreenState extends ConsumerState<NewsScreen> {
     return ref.refresh(newsFeedProvider.future);
   }
 
-
   Color _getCategoryColor(String cat) {
     switch (cat) {
-      case 'holdings': return WealthColors.gold;
-      case 'general': return WealthColors.primary;
-      case 'forex': return WealthColors.success;
-      case 'crypto': return WealthColors.crypto;
-      case 'merger': return WealthColors.accent;
-      case 'earnings': return WealthColors.equity;
-      default: return WealthColors.other;
+      case 'holdings':
+        return WealthColors.gold;
+      case 'general':
+        return WealthColors.primary;
+      case 'forex':
+        return WealthColors.success;
+      case 'crypto':
+        return WealthColors.crypto;
+      case 'merger':
+        return WealthColors.accent;
+      case 'earnings':
+        return WealthColors.equity;
+      default:
+        return WealthColors.other;
     }
   }
 
@@ -66,333 +72,409 @@ class _NewsScreenState extends ConsumerState<NewsScreen> {
         child: CustomScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
           slivers: [
-          // ── Header ──
-          SliverToBoxAdapter(
-            child: SafeArea(
-              bottom: false,
+            // ── Header ──
+            SliverToBoxAdapter(
+              child: SafeArea(
+                bottom: false,
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          'News',
+                          style: GoogleFonts.outfit(
+                            fontSize: 21,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: -0.5,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      const LlmStatusBox(),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+
+            // ── Category Chips (Sticky) ──
+            SliverPersistentHeader(
+              pinned: true,
+              delegate: _SliverAppBarDelegate(
+                minHeight: 58,
+                maxHeight: 58,
+                child: Container(
+                  color: Theme.of(context).scaffoldBackgroundColor,
+                  padding: const EdgeInsets.only(top: 8, bottom: 12),
+                  child: SizedBox(
+                    height: 40,
+                    child: ListView.separated(
+                      scrollDirection: Axis.horizontal,
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      itemCount: categories.length,
+                      separatorBuilder: (context, index) =>
+                          const SizedBox(width: 8),
+                      itemBuilder: (context, index) {
+                        final cat = categories[index];
+                        final isSelected = selectedCategory == cat;
+                        final color = _getCategoryColor(cat);
+
+                        return Material(
+                          color: isSelected
+                              ? color
+                              : color.withValues(alpha: 0.08),
+                          borderRadius: BorderRadius.circular(20),
+                          child: InkWell(
+                            onTap: () {
+                              ref.read(newsCategoryProvider.notifier).state =
+                                  cat;
+                            },
+                            borderRadius: BorderRadius.circular(20),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                              ),
+                              child: Center(
+                                child: Text(
+                                  cat == 'holdings'
+                                      ? 'MY HOLDINGS'
+                                      : cat.toUpperCase(),
+                                  style: GoogleFonts.sora(
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w700,
+                                    letterSpacing: 0.5,
+                                    color: isSelected ? Colors.white : color,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ),
+              ),
+            ),
+
+            // ── Search Bar ──
+            SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+                child: TextField(
+                  decoration: InputDecoration(
+                    hintText: 'Search news...',
+                    prefixIcon: const Icon(Icons.search_rounded, size: 20),
+                    suffixIcon: searchQuery.isNotEmpty
+                        ? IconButton(
+                            icon: const Icon(Icons.close_rounded, size: 18),
+                            onPressed: () =>
+                                ref.read(newsSearchProvider.notifier).state =
+                                    '',
+                          )
+                        : null,
+                  ),
+                  onChanged: (val) =>
+                      ref.read(newsSearchProvider.notifier).state = val,
+                  onSubmitted: (val) =>
+                      ref.read(newsSearchProvider.notifier).state = val,
+                ),
+              ),
+            ),
+
+            // ── Country and Currency Filters ──
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
                 child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Expanded(
-                      child: Text(
-                        'News',
-                        style: GoogleFonts.outfit(
-                          fontSize: 21,
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: -0.5,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        decoration: BoxDecoration(
+                          color: isDark
+                              ? WealthColors.cardDark
+                              : Colors.grey[100],
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: isDark
+                                ? WealthColors.borderDark
+                                : WealthColors.borderLight,
+                          ),
                         ),
-                        overflow: TextOverflow.ellipsis,
+                        child: DropdownButtonHideUnderline(
+                          child: DropdownButton<String?>(
+                            isExpanded: true,
+                            value: _filterCountry,
+                            hint: Text(
+                              'All Countries',
+                              style: GoogleFonts.sora(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            icon: const Icon(Icons.arrow_drop_down, size: 20),
+                            items: [
+                              DropdownMenuItem<String?>(
+                                child: Text(
+                                  'All Countries',
+                                  style: GoogleFonts.sora(fontSize: 10),
+                                ),
+                              ),
+                              // Basic static options for news since we don't know all article origins natively
+                              ...['US', 'UK', 'India', 'China', 'Europe'].map(
+                                (c) => DropdownMenuItem<String?>(
+                                  value: c,
+                                  child: Text(
+                                    c,
+                                    style: GoogleFonts.sora(fontSize: 10),
+                                  ),
+                                ),
+                              ),
+                            ],
+                            onChanged: (val) =>
+                                setState(() => _filterCountry = val),
+                          ),
+                        ),
                       ),
                     ),
-                    const LlmStatusBox(),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        decoration: BoxDecoration(
+                          color: isDark
+                              ? WealthColors.cardDark
+                              : Colors.grey[100],
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: isDark
+                                ? WealthColors.borderDark
+                                : WealthColors.borderLight,
+                          ),
+                        ),
+                        child: DropdownButtonHideUnderline(
+                          child: DropdownButton<String?>(
+                            isExpanded: true,
+                            value: _filterCurrency,
+                            hint: Text(
+                              'All Currencies',
+                              style: GoogleFonts.sora(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            icon: const Icon(Icons.arrow_drop_down, size: 20),
+                            items: [
+                              DropdownMenuItem<String?>(
+                                child: Text(
+                                  'All Currencies',
+                                  style: GoogleFonts.sora(fontSize: 10),
+                                ),
+                              ),
+                              ...['USD', 'GBP', 'INR', 'EUR', 'CNY'].map(
+                                (c) => DropdownMenuItem<String?>(
+                                  value: c,
+                                  child: Text(
+                                    c,
+                                    style: GoogleFonts.sora(fontSize: 10),
+                                  ),
+                                ),
+                              ),
+                            ],
+                            onChanged: (val) =>
+                                setState(() => _filterCurrency = val),
+                          ),
+                        ),
+                      ),
+                    ),
                   ],
                 ),
               ),
             ),
-          ),
 
-          // ── Category Chips (Sticky) ──
-          SliverPersistentHeader(
-            pinned: true,
-            delegate: _SliverAppBarDelegate(
-              minHeight: 58,
-              maxHeight: 58,
-              child: Container(
-                color: Theme.of(context).scaffoldBackgroundColor,
-                padding: const EdgeInsets.only(top: 8, bottom: 12),
-                child: SizedBox(
-                  height: 40,
-                  child: ListView.separated(
-                    scrollDirection: Axis.horizontal,
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    itemCount: categories.length,
-                    separatorBuilder: (context, index) => const SizedBox(width: 8),
-                    itemBuilder: (context, index) {
-                      final cat = categories[index];
-                      final isSelected = selectedCategory == cat;
-                      final color = _getCategoryColor(cat);
+            // ── Fast-path Configuration Check ──
+            Consumer(
+              builder: (context, ref, child) {
+                final apiKeyAsync = ref.watch(finnhubApiKeyProvider);
+                if (apiKeyAsync.isLoading) {
+                  return const SliverFillRemaining(
+                    child: Center(child: WealthLoadingIndicator()),
+                  );
+                }
 
-                      return Material(
-                        color: isSelected ? color : color.withValues(alpha: 0.08),
-                        borderRadius: BorderRadius.circular(20),
-                        child: InkWell(
-                          onTap: () {
-                            ref.read(newsCategoryProvider.notifier).state = cat;
-                          },
-                          borderRadius: BorderRadius.circular(20),
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 16),
-                            child: Center(
-                              child: Text(
-                                cat == 'holdings' ? 'MY HOLDINGS' : cat.toUpperCase(),
-                                style: GoogleFonts.sora(
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.w700,
-                                  letterSpacing: 0.5,
-                                  color: isSelected ? Colors.white : color,
-                                ),
+                if (apiKeyAsync.hasValue &&
+                    (apiKeyAsync.value == null ||
+                        apiKeyAsync.value!.trim().isEmpty)) {
+                  return SliverFillRemaining(
+                    child: _buildErrorStateWidget(
+                      ConfigurationException(
+                        'Finnhub API key not configured. Please add it in Settings -> API Configuration.',
+                        code: 'MISSING_API_KEY',
+                      ),
+                    ),
+                  );
+                }
+
+                // ── News Feed ──
+                return newsAsync.when(
+                  loading: () => const SliverFillRemaining(
+                    child: Center(child: WealthLoadingIndicator()),
+                  ),
+                  error: (err, stack) =>
+                      SliverFillRemaining(child: _buildErrorStateWidget(err)),
+                  data: (data) {
+                    var articles = data['market'] ?? [];
+                    var holdingArticles = data['holdings'] ?? [];
+
+                    // Apply Filters (Simple text matching since news API doesn't provide strict country/currency metadata)
+                    bool passFilter(NewsArticle article) {
+                      final text = '${article.title} ${article.description}'
+                          .toLowerCase();
+                      if (_filterCountry != null &&
+                          !text.contains(_filterCountry!.toLowerCase())) {
+                        return false;
+                      }
+                      if (_filterCurrency != null &&
+                          !text.contains(_filterCurrency!.toLowerCase())) {
+                        return false;
+                      }
+                      return true;
+                    }
+
+                    if (_filterCountry != null || _filterCurrency != null) {
+                      articles = articles.where(passFilter).toList();
+                      holdingArticles = holdingArticles
+                          .where(passFilter)
+                          .toList();
+                    }
+
+                    if (articles.isEmpty && holdingArticles.isEmpty) {
+                      return SliverFillRemaining(
+                        child: Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.newspaper_rounded,
+                                size: 48,
+                                color: WealthColors.textMuted,
                               ),
-                            ),
+                              const SizedBox(height: 12),
+                              Text(
+                                'No news found',
+                                style: Theme.of(context).textTheme.titleMedium,
+                              ),
+                            ],
                           ),
                         ),
                       );
-                    },
-                  ),
-                ),
-              ),
-            ),
-          ),
-
-          // ── Search Bar ──
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
-              child: TextField(
-                decoration: InputDecoration(
-                  hintText: 'Search news...',
-                  prefixIcon: const Icon(Icons.search_rounded, size: 20),
-                  suffixIcon: searchQuery.isNotEmpty
-                      ? IconButton(
-                          icon: const Icon(Icons.close_rounded, size: 18),
-                          onPressed: () => ref.read(newsSearchProvider.notifier).state = '',
-                        )
-                      : null,
-                ),
-                onChanged: (val) => ref.read(newsSearchProvider.notifier).state = val,
-                onSubmitted: (val) => ref.read(newsSearchProvider.notifier).state = val,
-              ),
-            ),
-          ),
-
-          // ── Country and Currency Filters ──
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
-                      decoration: BoxDecoration(
-                        color: isDark ? WealthColors.cardDark : Colors.grey[100],
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: isDark ? WealthColors.borderDark : WealthColors.borderLight,
-                        ),
-                      ),
-                      child: DropdownButtonHideUnderline(
-                        child: DropdownButton<String?>(
-                          isExpanded: true,
-                          value: _filterCountry,
-                          hint: Text(
-                            'All Countries',
-                            style: GoogleFonts.sora(fontSize: 11, fontWeight: FontWeight.w600),
-                          ),
-                          icon: const Icon(Icons.arrow_drop_down, size: 20),
-                          items: [
-                            DropdownMenuItem<String?>(
-                              child: Text('All Countries', style: GoogleFonts.sora(fontSize: 10)),
-                            ),
-                            // Basic static options for news since we don't know all article origins natively
-                            ...['US', 'UK', 'India', 'China', 'Europe'].map((c) => DropdownMenuItem<String?>(
-                                  value: c,
-                                  child: Text(c, style: GoogleFonts.sora(fontSize: 10)),
-                                )),
-                          ],
-                          onChanged: (val) => setState(() => _filterCountry = val),
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
-                      decoration: BoxDecoration(
-                        color: isDark ? WealthColors.cardDark : Colors.grey[100],
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: isDark ? WealthColors.borderDark : WealthColors.borderLight,
-                        ),
-                      ),
-                      child: DropdownButtonHideUnderline(
-                        child: DropdownButton<String?>(
-                          isExpanded: true,
-                          value: _filterCurrency,
-                          hint: Text(
-                            'All Currencies',
-                            style: GoogleFonts.sora(fontSize: 11, fontWeight: FontWeight.w600),
-                          ),
-                          icon: const Icon(Icons.arrow_drop_down, size: 20),
-                          items: [
-                            DropdownMenuItem<String?>(
-                              child: Text('All Currencies', style: GoogleFonts.sora(fontSize: 10)),
-                            ),
-                            ...['USD', 'GBP', 'INR', 'EUR', 'CNY'].map((c) => DropdownMenuItem<String?>(
-                                  value: c,
-                                  child: Text(c, style: GoogleFonts.sora(fontSize: 10)),
-                                )),
-                          ],
-                          onChanged: (val) => setState(() => _filterCurrency = val),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-
-          // ── Fast-path Configuration Check ──
-          Consumer(
-            builder: (context, ref, child) {
-              final apiKeyAsync = ref.watch(finnhubApiKeyProvider);
-              if (apiKeyAsync.isLoading) {
-                return const SliverFillRemaining(
-                  child: Center(child: WealthLoadingIndicator()),
-                );
-              }
-              
-              if (apiKeyAsync.hasValue && (apiKeyAsync.value == null || apiKeyAsync.value!.trim().isEmpty)) {
-                return SliverFillRemaining(
-                  child: _buildErrorStateWidget(
-                    ConfigurationException(
-                      'Finnhub API key not configured. Please add it in Settings -> API Configuration.',
-                      code: 'MISSING_API_KEY',
-                    ),
-                  ),
-                );
-              }
-              
-              // ── News Feed ──
-              return newsAsync.when(
-                loading: () => const SliverFillRemaining(
-                  child: Center(child: WealthLoadingIndicator()),
-                ),
-                error: (err, stack) => SliverFillRemaining(
-                  child: _buildErrorStateWidget(err),
-                ),
-                data: (data) {
-                  var articles = data['market'] ?? [];
-                  var holdingArticles = data['holdings'] ?? [];
-
-                  // Apply Filters (Simple text matching since news API doesn't provide strict country/currency metadata)
-                  bool passFilter(NewsArticle article) {
-                    final text = '${article.title} ${article.description}'.toLowerCase();
-                    if (_filterCountry != null && !text.contains(_filterCountry!.toLowerCase())) {
-                      return false;
                     }
-                    if (_filterCurrency != null && !text.contains(_filterCurrency!.toLowerCase())) {
-                      return false;
-                    }
-                    return true;
-                  }
 
-                  if (_filterCountry != null || _filterCurrency != null) {
-                    articles = articles.where(passFilter).toList();
-                    holdingArticles = holdingArticles.where(passFilter).toList();
-                  }
+                    return SliverList(
+                      delegate: SliverChildListDelegate([
+                        // Summary Section
+                        if (searchQuery.isEmpty && articles.isNotEmpty)
+                          Consumer(
+                            builder: (context, ref, child) {
+                              final summaryAsync = ref.watch(
+                                newsSummaryProvider(articles),
+                              );
+                              return summaryAsync.when(
+                                data: (summary) => Padding(
+                                  padding: const EdgeInsets.fromLTRB(
+                                    16,
+                                    16,
+                                    16,
+                                    0,
+                                  ),
+                                  child: _SummaryCard(
+                                    summary: summary,
+                                    articleCount: articles.length,
+                                    isDark: isDark,
+                                  ),
+                                ).animate().fadeIn(),
+                                loading: () => const SizedBox.shrink(),
+                                error: (err, stack) => const SizedBox.shrink(),
+                              );
+                            },
+                          ),
 
-                  if (articles.isEmpty && holdingArticles.isEmpty) {
-                    return SliverFillRemaining(
-                      child: Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.newspaper_rounded, size: 48, color: WealthColors.textMuted),
-                            const SizedBox(height: 12),
-                            Text('No news found', style: Theme.of(context).textTheme.titleMedium),
-                          ],
-                        ),
-                      ),
+                        // Holding Articles
+                        if (holdingArticles.isNotEmpty &&
+                            searchQuery.isEmpty) ...[
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(16, 20, 16, 10),
+                            child: _buildSectionHeader(
+                              'Your Holdings',
+                              Icons.account_balance_wallet_rounded,
+                            ),
+                          ),
+                          ...holdingArticles.map(
+                            (article) => Padding(
+                              padding: const EdgeInsets.fromLTRB(16, 0, 16, 6),
+                              child: _NewsCard(
+                                article: article,
+                                isDark: isDark,
+                                onTap: () => _openArticle(article),
+                              ),
+                            ).animate().fadeIn(),
+                          ),
+                        ],
+
+                        // Market Articles
+                        if (articles.isNotEmpty) ...[
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(16, 20, 16, 10),
+                            child: _buildSectionHeader(
+                              searchQuery.isNotEmpty
+                                  ? 'Search Results'
+                                  : 'Market News',
+                              Icons.public_rounded,
+                            ),
+                          ),
+                          ...articles.map(
+                            (article) => Padding(
+                              padding: const EdgeInsets.fromLTRB(16, 0, 16, 6),
+                              child: _NewsCard(
+                                article: article,
+                                isDark: isDark,
+                                onTap: () => _openArticle(article),
+                              ),
+                            ).animate().fadeIn(),
+                          ),
+                        ],
+
+                        const SizedBox(height: 40),
+                      ]),
                     );
-                  }
-
-                  return SliverList(
-                    delegate: SliverChildListDelegate([
-                      // Summary Section
-                      if (searchQuery.isEmpty && articles.isNotEmpty)
-                        Consumer(
-                          builder: (context, ref, child) {
-                            final summaryAsync = ref.watch(newsSummaryProvider(articles));
-                            return summaryAsync.when(
-                              data: (summary) => Padding(
-                                padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-                                child: _SummaryCard(
-                                  summary: summary,
-                                  articleCount: articles.length,
-                                  isDark: isDark,
-                                ),
-                              ).animate().fadeIn(),
-                              loading: () => const SizedBox.shrink(),
-                              error: (err, stack) => const SizedBox.shrink(),
-                            );
-                          },
-                        ),
-
-                      // Holding Articles
-                      if (holdingArticles.isNotEmpty && searchQuery.isEmpty) ...[
-                        Padding(
-                          padding: const EdgeInsets.fromLTRB(16, 20, 16, 10),
-                          child: _buildSectionHeader('Your Holdings', Icons.account_balance_wallet_rounded),
-                        ),
-                        ...holdingArticles.map((article) => Padding(
-                              padding: const EdgeInsets.fromLTRB(16, 0, 16, 6),
-                              child: _NewsCard(
-                                article: article,
-                                isDark: isDark,
-                                onTap: () => _openArticle(article),
-                              ),
-                            ).animate().fadeIn()),
-                      ],
-
-                      // Market Articles
-                      if (articles.isNotEmpty) ...[
-                        Padding(
-                          padding: const EdgeInsets.fromLTRB(16, 20, 16, 10),
-                          child: _buildSectionHeader(
-                            searchQuery.isNotEmpty ? 'Search Results' : 'Market News',
-                            Icons.public_rounded,
-                          ),
-                        ),
-                        ...articles.map((article) => Padding(
-                              padding: const EdgeInsets.fromLTRB(16, 0, 16, 6),
-                              child: _NewsCard(
-                                article: article,
-                                isDark: isDark,
-                                onTap: () => _openArticle(article),
-                              ),
-                            ).animate().fadeIn()),
-                      ],
-                      
-                      const SizedBox(height: 40),
-                    ]),
-                  );
-                },
-              );
-            },
-          ),
-          // End of CustomScrollView slivers
-        ],
+                  },
+                );
+              },
+            ),
+            // End of CustomScrollView slivers
+          ],
+        ),
       ),
-    ),
-  );
-}
+    );
+  }
 
   Widget _buildErrorStateWidget(Object err) {
     final error = err.toString();
     final lowercaseError = error.toLowerCase();
-    
-    final isConfigError = err is ConfigurationException || 
-                         lowercaseError.contains('not configured') || 
-                         lowercaseError.contains('missing_api_key') ||
-                         lowercaseError.contains('finnhub');
-                         
-    final isAuthError = lowercaseError.contains('401') || 
-                       lowercaseError.contains('invalid') || 
-                       lowercaseError.contains('api key');
+
+    final isConfigError =
+        err is ConfigurationException ||
+        lowercaseError.contains('not configured') ||
+        lowercaseError.contains('missing_api_key') ||
+        lowercaseError.contains('finnhub');
+
+    final isAuthError =
+        lowercaseError.contains('401') ||
+        lowercaseError.contains('invalid') ||
+        lowercaseError.contains('api key');
 
     return Center(
       child: Padding(
@@ -403,13 +485,19 @@ class _NewsScreenState extends ConsumerState<NewsScreen> {
             Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: (isConfigError || isAuthError ? Colors.orange : Colors.red).withValues(alpha: 0.1),
+                color:
+                    (isConfigError || isAuthError ? Colors.orange : Colors.red)
+                        .withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: Icon(
-                isConfigError || isAuthError ? Icons.key_off_rounded : Icons.error_outline_rounded,
+                isConfigError || isAuthError
+                    ? Icons.key_off_rounded
+                    : Icons.error_outline_rounded,
                 size: 48,
-                color: isConfigError || isAuthError ? Colors.orange : Colors.red,
+                color: isConfigError || isAuthError
+                    ? Colors.orange
+                    : Colors.red,
               ),
             ),
             const SizedBox(height: 24),
@@ -468,10 +556,7 @@ class _NewsScreenState extends ConsumerState<NewsScreen> {
         const SizedBox(width: 8),
         Text(
           title,
-          style: GoogleFonts.outfit(
-            fontSize: 16,
-            fontWeight: FontWeight.w700,
-          ),
+          style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.w700),
         ),
       ],
     );
@@ -481,7 +566,10 @@ class _NewsScreenState extends ConsumerState<NewsScreen> {
     showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Get Finnhub Key', style: GoogleFonts.outfit(fontWeight: FontWeight.w700)),
+        title: Text(
+          'Get Finnhub Key',
+          style: GoogleFonts.outfit(fontWeight: FontWeight.w700),
+        ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -491,9 +579,18 @@ class _NewsScreenState extends ConsumerState<NewsScreen> {
               style: GoogleFonts.sora(),
             ),
             const SizedBox(height: 16),
-            Text('1. Visit finnhub.io', style: GoogleFonts.sora(fontWeight: FontWeight.w600)),
-            Text('2. Create a free account', style: GoogleFonts.sora(fontWeight: FontWeight.w600)),
-            Text('3. Copy your API Key from the dashboard', style: GoogleFonts.sora(fontWeight: FontWeight.w600)),
+            Text(
+              '1. Visit finnhub.io',
+              style: GoogleFonts.sora(fontWeight: FontWeight.w600),
+            ),
+            Text(
+              '2. Create a free account',
+              style: GoogleFonts.sora(fontWeight: FontWeight.w600),
+            ),
+            Text(
+              '3. Copy your API Key from the dashboard',
+              style: GoogleFonts.sora(fontWeight: FontWeight.w600),
+            ),
             const SizedBox(height: 20),
             InkWell(
               onTap: () => launchUrl(Uri.parse('https://finnhub.io/dashboard')),
@@ -509,7 +606,10 @@ class _NewsScreenState extends ConsumerState<NewsScreen> {
           ],
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Got it')),
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Got it'),
+          ),
         ],
       ),
     );
@@ -529,7 +629,9 @@ class _NewsScreenState extends ConsumerState<NewsScreen> {
             return Container(
               decoration: BoxDecoration(
                 color: Theme.of(context).scaffoldBackgroundColor,
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(24),
+                ),
               ),
               child: ListView(
                 controller: scrollController,
@@ -538,7 +640,8 @@ class _NewsScreenState extends ConsumerState<NewsScreen> {
                   // Handle
                   Center(
                     child: Container(
-                      width: 40, height: 4,
+                      width: 40,
+                      height: 4,
                       decoration: BoxDecoration(
                         color: WealthColors.textMuted.withValues(alpha: 0.3),
                         borderRadius: BorderRadius.circular(2),
@@ -554,7 +657,8 @@ class _NewsScreenState extends ConsumerState<NewsScreen> {
                         height: 200,
                         width: double.infinity,
                         fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) => const SizedBox.shrink(),
+                        errorBuilder: (context, error, stackTrace) =>
+                            const SizedBox.shrink(),
                       ),
                     ),
                   const SizedBox(height: 20),
@@ -566,7 +670,10 @@ class _NewsScreenState extends ConsumerState<NewsScreen> {
                   Row(
                     children: [
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 4,
+                        ),
                         decoration: BoxDecoration(
                           color: WealthColors.primary.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(8),
@@ -590,18 +697,25 @@ class _NewsScreenState extends ConsumerState<NewsScreen> {
                   const SizedBox(height: 20),
                   SelectableText(
                     article.description,
-                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(height: 1.6),
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodyLarge?.copyWith(height: 1.6),
                   ),
                   if (article.symbols.isNotEmpty) ...[
                     const SizedBox(height: 20),
-                    Text('Related Symbols', style: Theme.of(context).textTheme.titleSmall),
+                    Text(
+                      'Related Symbols',
+                      style: Theme.of(context).textTheme.titleSmall,
+                    ),
                     const SizedBox(height: 8),
                     Wrap(
                       spacing: 8,
                       children: article.symbols.map((s) {
                         return Chip(
                           label: Text(s),
-                          backgroundColor: WealthColors.primary.withValues(alpha: 0.08),
+                          backgroundColor: WealthColors.primary.withValues(
+                            alpha: 0.08,
+                          ),
                         );
                       }).toList(),
                     ),
@@ -640,7 +754,9 @@ class _SummaryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final sentiment = Map<String, dynamic>.from(summary['sentiment'] as Map? ?? {});
+    final sentiment = Map<String, dynamic>.from(
+      summary['sentiment'] as Map? ?? {},
+    );
     final topSymbols = List<dynamic>.from(summary['topSymbols'] as List? ?? []);
 
     return Container(
@@ -650,7 +766,9 @@ class _SummaryCard extends StatelessWidget {
         color: isDark ? null : WealthColors.primary.withValues(alpha: 0.04),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: isDark ? WealthColors.borderDark : WealthColors.primary.withValues(alpha: 0.15),
+          color: isDark
+              ? WealthColors.borderDark
+              : WealthColors.primary.withValues(alpha: 0.15),
         ),
       ),
       child: Column(
@@ -658,9 +776,16 @@ class _SummaryCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              Icon(Icons.analytics_rounded, color: WealthColors.primary, size: 20),
+              Icon(
+                Icons.analytics_rounded,
+                color: WealthColors.primary,
+                size: 20,
+              ),
               const SizedBox(width: 8),
-              Text('Market Pulse', style: Theme.of(context).textTheme.titleSmall),
+              Text(
+                'Market Pulse',
+                style: Theme.of(context).textTheme.titleSmall,
+              ),
               const Spacer(),
               Text(
                 '$articleCount articles',
@@ -671,11 +796,23 @@ class _SummaryCard extends StatelessWidget {
           const SizedBox(height: 16),
           Row(
             children: [
-              _SentimentChip(label: 'Positive', value: sentiment['positive'].toString(), color: WealthColors.success),
+              _SentimentChip(
+                label: 'Positive',
+                value: sentiment['positive'].toString(),
+                color: WealthColors.success,
+              ),
               const SizedBox(width: 12),
-              _SentimentChip(label: 'Neutral', value: sentiment['neutral'].toString(), color: WealthColors.primary),
+              _SentimentChip(
+                label: 'Neutral',
+                value: sentiment['neutral'].toString(),
+                color: WealthColors.primary,
+              ),
               const SizedBox(width: 12),
-              _SentimentChip(label: 'Negative', value: sentiment['negative'].toString(), color: WealthColors.error),
+              _SentimentChip(
+                label: 'Negative',
+                value: sentiment['negative'].toString(),
+                color: WealthColors.error,
+              ),
             ],
           ),
           if (topSymbols.isNotEmpty) ...[
@@ -684,9 +821,14 @@ class _SummaryCard extends StatelessWidget {
               spacing: 8,
               runSpacing: 6,
               children: topSymbols.take(5).map((symbol) {
-                final symbolMap = Map<String, dynamic>.from(symbol as Map? ?? {});
+                final symbolMap = Map<String, dynamic>.from(
+                  symbol as Map? ?? {},
+                );
                 return Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: WealthColors.primary.withValues(alpha: 0.08),
                     borderRadius: BorderRadius.circular(8),
@@ -710,7 +852,11 @@ class _SummaryCard extends StatelessWidget {
 }
 
 class _SentimentChip extends StatelessWidget {
-  const _SentimentChip({required this.label, required this.value, required this.color});
+  const _SentimentChip({
+    required this.label,
+    required this.value,
+    required this.color,
+  });
   final String label;
   final String value;
   final Color color;
@@ -737,7 +883,10 @@ class _SentimentChip extends StatelessWidget {
             const SizedBox(height: 2),
             Text(
               label,
-              style: GoogleFonts.sora(fontSize: 10, color: WealthColors.textMuted),
+              style: GoogleFonts.sora(
+                fontSize: 10,
+                color: WealthColors.textMuted,
+              ),
             ),
           ],
         ),
@@ -747,7 +896,11 @@ class _SentimentChip extends StatelessWidget {
 }
 
 class _NewsCard extends StatelessWidget {
-  const _NewsCard({required this.article, required this.isDark, required this.onTap});
+  const _NewsCard({
+    required this.article,
+    required this.isDark,
+    required this.onTap,
+  });
   final NewsArticle article;
   final bool isDark;
   final VoidCallback onTap;
@@ -758,8 +911,8 @@ class _NewsCard extends StatelessWidget {
     final sentimentColor = sentimentScore > 0.2
         ? WealthColors.success
         : sentimentScore < -0.2
-            ? WealthColors.error
-            : WealthColors.primary;
+        ? WealthColors.error
+        : WealthColors.primary;
 
     return Material(
       color: Colors.transparent,
@@ -772,7 +925,9 @@ class _NewsCard extends StatelessWidget {
             color: isDark ? WealthColors.cardDark : WealthColors.cardLight,
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
-              color: isDark ? WealthColors.borderDark : WealthColors.borderLight,
+              color: isDark
+                  ? WealthColors.borderDark
+                  : WealthColors.borderLight,
             ),
           ),
           child: Column(
@@ -790,12 +945,17 @@ class _NewsCard extends StatelessWidget {
                         height: 60,
                         fit: BoxFit.cover,
                         errorBuilder: (context, error, stackTrace) => Container(
-                          width: 60, height: 60,
+                          width: 60,
+                          height: 60,
                           decoration: BoxDecoration(
                             color: WealthColors.primary.withValues(alpha: 0.08),
                             borderRadius: BorderRadius.circular(8),
                           ),
-                          child: const Icon(Icons.article_rounded, color: WealthColors.primary, size: 20),
+                          child: const Icon(
+                            Icons.article_rounded,
+                            color: WealthColors.primary,
+                            size: 20,
+                          ),
                         ),
                       ),
                     ),
@@ -809,7 +969,9 @@ class _NewsCard extends StatelessWidget {
                           style: GoogleFonts.outfit(
                             fontSize: 11,
                             fontWeight: FontWeight.w700,
-                            color: isDark ? WealthColors.textLight : WealthColors.textDark,
+                            color: isDark
+                                ? WealthColors.textLight
+                                : WealthColors.textDark,
                           ),
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
@@ -838,14 +1000,22 @@ class _NewsCard extends StatelessWidget {
                       children: [
                         Flexible(
                           child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 3,
+                            ),
                             decoration: BoxDecoration(
-                              color: WealthColors.textMuted.withValues(alpha: 0.08),
+                              color: WealthColors.textMuted.withValues(
+                                alpha: 0.08,
+                              ),
                               borderRadius: BorderRadius.circular(6),
                             ),
                             child: Text(
                               article.source,
-                              style: GoogleFonts.sora(fontSize: 10, fontWeight: FontWeight.w500),
+                              style: GoogleFonts.sora(
+                                fontSize: 10,
+                                fontWeight: FontWeight.w500,
+                              ),
                               overflow: TextOverflow.ellipsis,
                             ),
                           ),
@@ -854,9 +1024,14 @@ class _NewsCard extends StatelessWidget {
                           const SizedBox(width: 8),
                           Flexible(
                             child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 3,
+                              ),
                               decoration: BoxDecoration(
-                                color: WealthColors.primary.withValues(alpha: 0.08),
+                                color: WealthColors.primary.withValues(
+                                  alpha: 0.08,
+                                ),
                                 borderRadius: BorderRadius.circular(6),
                               ),
                               child: Text(
@@ -879,8 +1054,8 @@ class _NewsCard extends StatelessWidget {
                     sentimentScore > 0.2
                         ? Icons.trending_up_rounded
                         : sentimentScore < -0.2
-                            ? Icons.trending_down_rounded
-                            : Icons.trending_flat_rounded,
+                        ? Icons.trending_down_rounded
+                        : Icons.trending_flat_rounded,
                     color: sentimentColor,
                     size: 18,
                   ),
@@ -898,6 +1073,7 @@ class _NewsCard extends StatelessWidget {
     );
   }
 }
+
 class _SliverAppBarDelegate extends SliverPersistentHeaderDelegate {
   _SliverAppBarDelegate({
     required this.minHeight,
@@ -916,7 +1092,11 @@ class _SliverAppBarDelegate extends SliverPersistentHeaderDelegate {
   double get maxExtent => math.max(maxHeight, minHeight);
 
   @override
-  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
+  Widget build(
+    BuildContext context,
+    double shrinkOffset,
+    bool overlapsContent,
+  ) {
     return SizedBox.expand(child: child);
   }
 

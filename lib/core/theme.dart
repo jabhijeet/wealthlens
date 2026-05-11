@@ -282,10 +282,7 @@ ThemeData buildLightTheme({double fontScale = 1.0}) {
         borderRadius: BorderRadius.circular(14),
         borderSide: const BorderSide(color: WealthColors.error),
       ),
-      labelStyle: GoogleFonts.sora(
-        color: WealthColors.textMuted,
-        fontSize: 14,
-      ),
+      labelStyle: GoogleFonts.sora(color: WealthColors.textMuted, fontSize: 14),
       hintStyle: GoogleFonts.sora(
         color: WealthColors.textMuted.withValues(alpha: 0.5),
         fontSize: 14,

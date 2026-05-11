@@ -4,17 +4,22 @@ import '../data/db/database.dart';
 import '../data/db/daos.dart';
 import 'providers.dart';
 
-final countryAllocationProvider = FutureProvider<Map<Country, double>>((ref) async {
-  final holdingsWithInstruments = await ref.watch<Future<List<HoldingWithInstrument>>>(
-    holdingsWithInstrumentsProvider.future,
-  );
+final countryAllocationProvider = FutureProvider<Map<Country, double>>((
+  ref,
+) async {
+  final holdingsWithInstruments = await ref
+      .watch<Future<List<HoldingWithInstrument>>>(
+        holdingsWithInstrumentsProvider.future,
+      );
   final fxService = ref.watch(fxServiceProvider);
   final baseCurrency = ref.watch(selectedCurrencyProvider);
 
   if (holdingsWithInstruments.isEmpty) return {};
 
   final priceDao = ref.read(priceSnapshotDaoProvider);
-  final allInstrumentIds = holdingsWithInstruments.map((h) => h.instrument.id).toList();
+  final allInstrumentIds = holdingsWithInstruments
+      .map((h) => h.instrument.id)
+      .toList();
   final priceMap = await priceDao.getLatestBatch(allInstrumentIds);
 
   final countryAllocation = <Country, double>{};
@@ -33,13 +38,15 @@ final countryAllocationProvider = FutureProvider<Map<Country, double>>((ref) asy
     final currency = h.instrument.currency;
     final rate = await getCachedRate(currency, baseCurrency);
 
-    final priceMinor = priceMap[h.instrument.id]?.closeMinor ?? h.holding.avgCostMinor;
+    final priceMinor =
+        priceMap[h.instrument.id]?.closeMinor ?? h.holding.avgCostMinor;
     final quantity = Decimal.parse(h.holding.quantity);
     final valueNativeMinor = quantity * Decimal.fromInt(priceMinor);
     final valueBase = (valueNativeMinor * rate) / Decimal.fromInt(100);
-    
+
     final country = h.instrument.country;
-    countryAllocation[country] = (countryAllocation[country] ?? 0.0) + valueBase.toDouble();
+    countryAllocation[country] =
+        (countryAllocation[country] ?? 0.0) + valueBase.toDouble();
   }
 
   return countryAllocation;

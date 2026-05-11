@@ -40,7 +40,6 @@ class CurrencySummary {
   final Decimal? fxRateToBase;
 }
 
-
 class TopMover {
   TopMover({
     required this.instrumentName,

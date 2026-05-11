@@ -22,7 +22,10 @@ class CountryAllocationCarousel extends ConsumerWidget {
       data: (allocation) {
         if (allocation.isEmpty) return const SizedBox.shrink();
 
-        final total = allocation.values.fold<double>(0, (sum, val) => sum + val);
+        final total = allocation.values.fold<double>(
+          0,
+          (sum, val) => sum + val,
+        );
         final sortedEntries = allocation.entries.toList()
           ..sort((a, b) => b.value.compareTo(a.value));
 
@@ -55,10 +58,14 @@ class CountryAllocationCarousel extends ConsumerWidget {
                     width: 160,
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: isDark ? WealthColors.cardDark : WealthColors.cardLight,
+                      color: isDark
+                          ? WealthColors.cardDark
+                          : WealthColors.cardLight,
                       borderRadius: BorderRadius.circular(20),
                       border: Border.all(
-                        color: isDark ? WealthColors.borderDark : WealthColors.borderLight,
+                        color: isDark
+                            ? WealthColors.borderDark
+                            : WealthColors.borderLight,
                       ),
                     ),
                     child: Column(
@@ -75,7 +82,10 @@ class CountryAllocationCarousel extends ConsumerWidget {
                               ),
                             ),
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 6,
+                                vertical: 2,
+                              ),
                               decoration: BoxDecoration(
                                 color: color.withValues(alpha: 0.1),
                                 borderRadius: BorderRadius.circular(6),
@@ -104,7 +114,10 @@ class CountryAllocationCarousel extends ConsumerWidget {
                         FittedBox(
                           fit: BoxFit.scaleDown,
                           child: MoneyText(
-                            money: Money.fromDecimal(Decimal.parse(value.toString()), baseCurrency),
+                            money: Money.fromDecimal(
+                              Decimal.parse(value.toString()),
+                              baseCurrency,
+                            ),
                             style: GoogleFonts.plusJakartaSans(
                               fontSize: 18,
                               fontWeight: FontWeight.w800,
@@ -120,28 +133,42 @@ class CountryAllocationCarousel extends ConsumerWidget {
           ],
         );
       },
-      loading: () => const SizedBox(height: 120, child: Center(child: CircularProgressIndicator())),
-      error: (e, st) => SizedBox(height: 120, child: Center(child: Text('Error: $e'))),
+      loading: () => const SizedBox(
+        height: 120,
+        child: Center(child: CircularProgressIndicator()),
+      ),
+      error: (e, st) =>
+          SizedBox(height: 120, child: Center(child: Text('Error: $e'))),
     );
   }
 
   String _formatCountryName(Country country) {
     switch (country) {
-      case Country.usa: return 'USA';
-      case Country.uk: return 'UK';
-      case Country.india: return 'India';
-      case Country.singapore: return 'Singapore';
-      case Country.other: return 'Other';
+      case Country.usa:
+        return 'USA';
+      case Country.uk:
+        return 'UK';
+      case Country.india:
+        return 'India';
+      case Country.singapore:
+        return 'Singapore';
+      case Country.other:
+        return 'Other';
     }
   }
 
   Color _getCountryColor(Country country) {
     switch (country) {
-      case Country.india: return const Color(0xFFFF9933);
-      case Country.usa: return const Color(0xFF3C3B6E);
-      case Country.singapore: return const Color(0xFFED2939);
-      case Country.uk: return const Color(0xFF012169);
-      default: return WealthColors.primary;
+      case Country.india:
+        return const Color(0xFFFF9933);
+      case Country.usa:
+        return const Color(0xFF3C3B6E);
+      case Country.singapore:
+        return const Color(0xFFED2939);
+      case Country.uk:
+        return const Color(0xFF012169);
+      default:
+        return WealthColors.primary;
     }
   }
 }

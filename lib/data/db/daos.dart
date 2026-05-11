@@ -39,9 +39,9 @@ class InstrumentDao {
     String id,
     InstrumentsCompanion companion,
   ) async {
-    await (_db.update(_db.instruments)..where((t) => t.id.equals(id))).write(
-      companion,
-    );
+    await (_db.update(
+      _db.instruments,
+    )..where((t) => t.id.equals(id))).write(companion);
   }
 
   Future<int> delete(String id) =>
@@ -296,6 +296,18 @@ class TransactionDao {
       );
     }
 
+    var finalQuantity = quantity ?? 0.0;
+    var finalPriceMinor = price?.minor ?? 0;
+
+    // For transactions where amount is provided but quantity/price is 0 (like dividends/fees)
+    if (finalQuantity == 0 && amount.minor != 0) {
+      finalQuantity = 1.0;
+      finalPriceMinor = amount.minor;
+    } else if (finalQuantity != 0 && finalPriceMinor == 0 && amount.minor != 0) {
+      // If we have quantity and amount but no price, calculate price
+      finalPriceMinor = (amount.minor / finalQuantity).round();
+    }
+
     return await insert(
       TransactionsCompanion(
         holdingId: Value(finalHoldingId),
@@ -306,8 +318,8 @@ class TransactionDao {
           ),
         ),
         date: Value(date),
-        quantity: Value(quantity?.toString() ?? '0'),
-        priceMinor: Value(price?.minor ?? 0),
+        quantity: Value(finalQuantity.toString()),
+        priceMinor: Value(finalPriceMinor),
         feesMinor: Value(fee?.minor ?? 0),
         notes: Value(description),
       ),
@@ -341,12 +353,14 @@ class PriceSnapshotDao {
     List<String> instrumentIds,
   ) async {
     if (instrumentIds.isEmpty) return {};
-    final rows = await (_db.select(_db.priceSnapshots)
-          ..where((t) => t.instrumentId.isIn(instrumentIds))
-          ..orderBy([
-            (t) => OrderingTerm(expression: t.date, mode: OrderingMode.desc),
-          ]))
-        .get();
+    final rows =
+        await (_db.select(_db.priceSnapshots)
+              ..where((t) => t.instrumentId.isIn(instrumentIds))
+              ..orderBy([
+                (t) =>
+                    OrderingTerm(expression: t.date, mode: OrderingMode.desc),
+              ]))
+            .get();
     // Keep only the most-recent row per instrument (list is already desc by date)
     final result = <String, PriceSnapshot>{};
     for (final row in rows) {
@@ -360,12 +374,14 @@ class PriceSnapshotDao {
     List<String> instrumentIds,
   ) async {
     if (instrumentIds.isEmpty) return {};
-    final rows = await (_db.select(_db.priceSnapshots)
-          ..where((t) => t.instrumentId.isIn(instrumentIds))
-          ..orderBy([
-            (t) => OrderingTerm(expression: t.date, mode: OrderingMode.desc),
-          ]))
-        .get();
+    final rows =
+        await (_db.select(_db.priceSnapshots)
+              ..where((t) => t.instrumentId.isIn(instrumentIds))
+              ..orderBy([
+                (t) =>
+                    OrderingTerm(expression: t.date, mode: OrderingMode.desc),
+              ]))
+            .get();
     final result = <String, List<PriceSnapshot>>{};
     for (final row in rows) {
       result.putIfAbsent(row.instrumentId, () => []);
@@ -397,10 +413,12 @@ class FxRateDao {
 
   Future<FxRate?> getLatestNonManual(String base, String quote) =>
       (_db.select(_db.fxRates)
-            ..where((t) =>
-                t.base.equals(base) &
-                t.quote.equals(quote) &
-                t.source.equals('manual').not())
+            ..where(
+              (t) =>
+                  t.base.equals(base) &
+                  t.quote.equals(quote) &
+                  t.source.equals('manual').not(),
+            )
             ..orderBy([
               (t) => OrderingTerm(expression: t.date, mode: OrderingMode.desc),
             ]))
@@ -411,9 +429,9 @@ class FxRateDao {
   }
 
   Future<void> deleteRate(String base, String quote) async {
-    await (_db.delete(_db.fxRates)
-          ..where((t) => t.base.equals(base) & t.quote.equals(quote)))
-        .go();
+    await (_db.delete(
+      _db.fxRates,
+    )..where((t) => t.base.equals(base) & t.quote.equals(quote))).go();
   }
 
   Future<int> clearAll() => _db.delete(_db.fxRates).go();
@@ -434,8 +452,6 @@ class FxRateDao {
     }).toList();
   }
 }
-
-
 
 class FdRdAccountDao {
   FdRdAccountDao(this._db);
@@ -566,7 +582,6 @@ class RealEstateHoldingDao {
   Future<int> clearAll() => _db.delete(_db.realEstateHoldings).go();
 }
 
-
 @riverpod
 InstrumentDao instrumentDao(Ref ref) =>
     InstrumentDao(ref.watch(appDatabaseProvider));
@@ -604,8 +619,6 @@ CryptoHoldingDao cryptoHoldingDao(Ref ref) =>
 @riverpod
 RealEstateHoldingDao realEstateHoldingDao(Ref ref) =>
     RealEstateHoldingDao(ref.watch(appDatabaseProvider));
-
-
 
 final holdingsWithInstrumentsProvider =
     StreamProvider<List<HoldingWithInstrument>>((Ref ref) {

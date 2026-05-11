@@ -46,11 +46,12 @@ class ErrorHandler {
     final errorMessage = error?.toString() ?? 'Unknown error';
 
     // Check if this is a silent exception or a common recoverable error
-    final isSilent = (error is WealthLensException && error.isSilent) ||
-                    error is TimeoutException ||
-                    error is http.ClientException ||
-                    errorMessage.contains('TimeoutException') ||
-                    errorMessage.contains('timed out');
+    final isSilent =
+        (error is WealthLensException && error.isSilent) ||
+        error is TimeoutException ||
+        error is http.ClientException ||
+        errorMessage.contains('TimeoutException') ||
+        errorMessage.contains('timed out');
 
     if (isSilent) {
       _logger.i('$errorContext: $errorMessage');
@@ -88,7 +89,11 @@ class ErrorHandler {
       scaffoldMessengerKey.currentState?.showSnackBar(
         SnackBar(
           content: Text(errorMessage),
-          backgroundColor: isSilent ? const Color(0xFF616161) : const Color(0xFFD32F2F), // Gray 700 for warnings, Red 700 for errors
+          backgroundColor: isSilent
+              ? const Color(0xFF616161)
+              : const Color(
+                  0xFFD32F2F,
+                ), // Gray 700 for warnings, Red 700 for errors
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -96,7 +101,11 @@ class ErrorHandler {
   }
 
   /// Log a warning that doesn't require a stack trace
-  void handleWarning(String message, {String? context, bool showToUser = false}) {
+  void handleWarning(
+    String message, {
+    String? context,
+    bool showToUser = false,
+  }) {
     final warningContext = context ?? 'Warning';
     _logger.w('$warningContext: $message');
 

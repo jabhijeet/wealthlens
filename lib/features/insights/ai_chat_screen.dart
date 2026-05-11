@@ -206,11 +206,11 @@ class _AiChatScreenState extends ConsumerState<AiChatScreen> {
                       final msg = _messages[index];
                       final isUser = msg['role'] == 'user';
                       return _ChatBubble(
-                        content: msg['content']!,
-                        isUser: isUser,
-                        isDark: isDark,
-                        isError: msg['isError'] == 'true',
-                      )
+                            content: msg['content']!,
+                            isUser: isUser,
+                            isDark: isDark,
+                            isError: msg['isError'] == 'true',
+                          )
                           .animate()
                           .fadeIn(duration: 200.ms)
                           .slideY(begin: 0.1, end: 0);
@@ -372,14 +372,17 @@ class _ChatBubble extends StatelessWidget {
     } else if (isError) {
       bubbleColor = WealthColors.error.withValues(alpha: 0.1);
     } else {
-      bubbleColor =
-          isDark ? WealthColors.cardDarkElevated : const Color(0xFFF0F1F5);
+      bubbleColor = isDark
+          ? WealthColors.cardDarkElevated
+          : const Color(0xFFF0F1F5);
     }
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Row(
-        mainAxisAlignment: isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
+        mainAxisAlignment: isUser
+            ? MainAxisAlignment.end
+            : MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (!isUser) ...[
@@ -431,17 +434,26 @@ class _ChatBubble extends StatelessWidget {
                       color: isUser
                           ? Colors.white
                           : isError
-                              ? WealthColors.error
-                              : null,
+                          ? WealthColors.error
+                          : null,
                     ),
                   ),
-                  if (isError && (content.contains('API key') || content.contains('Settings')))
+                  if (isError &&
+                      (content.contains('API key') ||
+                          content.contains('Settings')))
                     Padding(
                       padding: const EdgeInsets.only(top: 8),
                       child: TextButton.icon(
-                        onPressed: () => context.push('/settings/llm-providers'),
+                        onPressed: () =>
+                            context.push('/settings/llm-providers'),
                         icon: const Icon(Icons.settings_rounded, size: 16),
-                        label: const Text('Go to Settings', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                        label: const Text(
+                          'Go to Settings',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                         style: TextButton.styleFrom(
                           foregroundColor: WealthColors.error,
                           padding: EdgeInsets.zero,

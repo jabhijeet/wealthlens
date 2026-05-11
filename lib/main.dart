@@ -154,11 +154,7 @@ class _WealthLensAppState extends ConsumerState<WealthLensApp> {
               );
             }
             return SizedBox.expand(
-              child: Material(
-                child: LockScreen(
-                  child: child!,
-                ),
-              ),
+              child: Material(child: LockScreen(child: child!)),
             );
           },
         );

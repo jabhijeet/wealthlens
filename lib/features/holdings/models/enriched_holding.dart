@@ -20,10 +20,11 @@ class EnrichedHolding {
   Instrument get instrument => holdingWithInstrument.instrument;
 
   Money get bookValue => Money(
-        minor: (Decimal.parse(holding.quantity) *
+    minor:
+        (Decimal.parse(holding.quantity) *
                 Decimal.fromInt(holding.avgCostMinor))
             .toBigInt()
             .toInt(),
-        currency: instrument.currency,
-      );
+    currency: instrument.currency,
+  );
 }

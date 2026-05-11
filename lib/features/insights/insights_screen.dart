@@ -9,6 +9,8 @@ import '../../models/insights.dart';
 import '../../widgets/loading_indicator.dart';
 import '../../core/theme.dart';
 import '../../widgets/llm_status_box.dart';
+import '../../llm/llm_provider.dart';
+import '../../services/logging/error_handler.dart';
 
 class InsightsScreen extends ConsumerStatefulWidget {
   const InsightsScreen({super.key});
@@ -108,7 +110,6 @@ class _InsightsScreenState extends ConsumerState<InsightsScreen> {
     );
   }
 
-
   Color _getCategoryColor(String category) {
     switch (category) {
       case 'warning':
@@ -146,7 +147,9 @@ class _InsightsScreenState extends ConsumerState<InsightsScreen> {
   void _showErrorSnackBar(String error) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('Analysis failed: ${error.contains("401") ? "Authentication error (check API keys)" : error}'),
+        content: Text(
+          'Analysis failed: ${error.contains("401") ? "Authentication error (check API keys)" : error}',
+        ),
         backgroundColor: WealthColors.error,
         behavior: SnackBarBehavior.floating,
         action: SnackBarAction(
@@ -163,6 +166,8 @@ class _InsightsScreenState extends ConsumerState<InsightsScreen> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final provider = ref.watch(activeLlmProvider);
+    final isConfigured = provider != null && provider.isConfigured;
     final insightsAsync = ref.watch(portfolioInsightsProvider);
     final analysisState = ref.watch(detailedAnalysisProvider);
 
@@ -210,34 +215,43 @@ class _InsightsScreenState extends ConsumerState<InsightsScreen> {
                           Row(
                             children: [
                               const LlmStatusBox(),
-                              if (analysisState.isGenerating) ...[
-                                const SizedBox(width: 8),
-                                const SizedBox(
-                                  width: 20,
-                                  height: 20,
-                                  child: CircularProgressIndicator(strokeWidth: 2),
-                                ),
-                              ] else if (analysisState.error != null) ...[
-                                const SizedBox(width: 4),
-                                IconButton(
-                                  icon: const Icon(
-                                    Icons.error_outline_rounded,
-                                    color: WealthColors.error,
+                              if (isConfigured) ...[
+                                if (analysisState.isGenerating) ...[
+                                  const SizedBox(width: 8),
+                                  const SizedBox(
+                                    width: 20,
+                                    height: 20,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                    ),
                                   ),
-                                  onPressed: () => _showErrorSnackBar(analysisState.error!),
-                                  tooltip: 'Analysis Error',
-                                ),
-                              ] else if (analysisState.analysis.isNotEmpty) ...[
-                                const SizedBox(width: 4),
-                                IconButton(
-                                  icon: const Icon(
-                                    Icons.auto_awesome_rounded,
-                                    color: WealthColors.primary,
+                                ] else if (analysisState.error != null) ...[
+                                  const SizedBox(width: 4),
+                                  IconButton(
+                                    icon: const Icon(
+                                      Icons.error_outline_rounded,
+                                      color: WealthColors.error,
+                                    ),
+                                    onPressed: () => _showErrorSnackBar(
+                                      analysisState.error!,
+                                    ),
+                                    tooltip: 'Analysis Error',
                                   ),
-                                  onPressed: () =>
-                                      _showAnalysisSheet(analysisState.analysis),
-                                  tooltip: 'Deep Analysis',
-                                ),
+                                ] else if (analysisState
+                                    .analysis
+                                    .isNotEmpty) ...[
+                                  const SizedBox(width: 4),
+                                  IconButton(
+                                    icon: const Icon(
+                                      Icons.auto_awesome_rounded,
+                                      color: WealthColors.primary,
+                                    ),
+                                    onPressed: () => _showAnalysisSheet(
+                                      analysisState.analysis,
+                                    ),
+                                    tooltip: 'Deep Analysis',
+                                  ),
+                                ],
                               ],
                             ],
                           ),
@@ -247,195 +261,212 @@ class _InsightsScreenState extends ConsumerState<InsightsScreen> {
                   ),
                 ),
 
-                // ── Analysis Ready / Error Badge ──
-                if (!analysisState.isGenerating &&
-                    (analysisState.analysis.isNotEmpty ||
-                        analysisState.error != null))
-                  SliverToBoxAdapter(
-                    child: Padding(
-                      padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
-                      child: GestureDetector(
-                        onTap: analysisState.error != null
-                            ? () => _showErrorSnackBar(analysisState.error!)
-                            : () => _showAnalysisSheet(analysisState.analysis),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 14,
-                            vertical: 10,
-                          ),
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: analysisState.error != null
-                                  ? [
-                                      WealthColors.error,
-                                      WealthColors.error.withValues(alpha: 0.8),
-                                    ]
-                                  : [
-                                      WealthColors.primary,
-                                      WealthColors.primary.withValues(
-                                        alpha: 0.8,
-                                      ),
-                                    ],
-                            ),
-                            borderRadius: BorderRadius.circular(16),
-                            boxShadow: [
-                              BoxShadow(
-                                color: (analysisState.error != null
-                                        ? WealthColors.error
-                                        : WealthColors.primary)
-                                    .withValues(alpha: 0.3),
-                                blurRadius: 12,
-                                offset: const Offset(0, 4),
-                              ),
-                            ],
-                          ),
-                                  child: Row(
-                                    children: [
-                                      Icon(
-                                        analysisState.error != null
-                                            ? Icons.warning_amber_rounded
-                                            : Icons.stars_rounded,
-                                        color: Colors.white,
-                                        size: 24,
-                                      ),
-                                      const SizedBox(width: 12),
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              analysisState.error != null
-                                                  ? 'Deep Analysis Failed ⛔'
-                                                  : 'Deep Analysis Ready ✨',
-                                              style:
-                                                  GoogleFonts.outfit(
-                                                color: Colors.white,
-                                                fontWeight: FontWeight.w700,
-                                                fontSize: 14,
-                                              ),
-                                            ),
-                                            Text(
-                                              analysisState.error != null
-                                                  ? 'Tap to see what went wrong.'
-                                                  : 'Tap to view your personalized portfolio deep-dive.',
-                                              style: GoogleFonts.sora(
-                                                color: Colors.white.withValues(
-                                                  alpha: 0.9,
-                                                ),
-                                                fontSize: 12,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                      const Icon(
-                                        Icons.chevron_right_rounded,
-                                        color: Colors.white,
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              )
-                              .animate()
-                              .shimmer(duration: 2.seconds)
-                              .scale(
-                                begin: const Offset(0.95, 0.95),
-                                end: const Offset(1, 1),
-                                curve: Curves.easeOutBack,
-                              ),
-                    ),
-                  ),
-
-                // ── Category Chips ──
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.only(top: 16),
-                    child: SizedBox(
-                      height: 40,
-                      child: ListView(
-                        scrollDirection: Axis.horizontal,
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        children: [
-                          _CategoryChip(
-                            label: 'All',
-                            icon: Icons.all_inclusive_rounded,
-                            isSelected: _selectedCategory == 'all',
-                            color: WealthColors.primary,
-                            onTap: () =>
-                                setState(() => _selectedCategory = 'all'),
-                          ),
-                          ...counts.entries.map(
-                            (entry) => Padding(
-                              padding: const EdgeInsets.only(left: 8),
-                              child: _CategoryChip(
-                                label:
-                                    '${entry.key.capitalize()} (${entry.value})',
-                                icon: _getCategoryIcon(entry.key),
-                                isSelected: _selectedCategory == entry.key,
-                                color: _getCategoryColor(entry.key),
-                                onTap: () => setState(
-                                  () => _selectedCategory = entry.key,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-
-                if (insights.isEmpty)
+                if (!isConfigured)
                   SliverFillRemaining(
-                    child: Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(24),
-                            decoration: BoxDecoration(
-                              color: WealthColors.primary.withValues(
-                                alpha: 0.08,
-                              ),
-                              shape: BoxShape.circle,
-                            ),
-                            child: const Icon(
-                              Icons.insights_rounded,
-                              size: 48,
-                              color: WealthColors.primary,
-                            ),
-                          ),
-                          const SizedBox(height: 20),
-                          Text(
-                            'No insights available',
-                            style: Theme.of(context).textTheme.titleMedium,
-                          ),
-                        ],
+                    child: _buildErrorStateWidget(
+                      ConfigurationException(
+                        'LLM API key not configured. Please add it in Settings -> LLM Providers.',
+                        code: 'MISSING_API_KEY',
                       ),
                     ),
                   )
-                else
-                  SliverPadding(
-                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
-                    sliver: SliverList(
-                      delegate: SliverChildBuilderDelegate((context, index) {
-                        final insight = filteredInsights[index];
-                        return Padding(
-                              padding: const EdgeInsets.only(bottom: 12),
-                              child: _InsightCard(
-                                insight: insight,
-                                color: _getCategoryColor(insight.category),
-                                icon: _getCategoryIcon(insight.category),
-                                isDark: isDark,
+                else ...[
+                  // ── Analysis Ready / Error Badge ──
+                  if (!analysisState.isGenerating &&
+                      (analysisState.analysis.isNotEmpty ||
+                          analysisState.error != null))
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+                        child:
+                            GestureDetector(
+                                  onTap: analysisState.error != null
+                                      ? () => _showErrorSnackBar(
+                                          analysisState.error!,
+                                        )
+                                      : () => _showAnalysisSheet(
+                                          analysisState.analysis,
+                                        ),
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 14,
+                                      vertical: 10,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      gradient: LinearGradient(
+                                        colors: analysisState.error != null
+                                            ? [
+                                                WealthColors.error,
+                                                WealthColors.error.withValues(
+                                                  alpha: 0.8,
+                                                ),
+                                              ]
+                                            : [
+                                                WealthColors.primary,
+                                                WealthColors.primary.withValues(
+                                                  alpha: 0.8,
+                                                ),
+                                              ],
+                                      ),
+                                      borderRadius: BorderRadius.circular(16),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color:
+                                              (analysisState.error != null
+                                                      ? WealthColors.error
+                                                      : WealthColors.primary)
+                                                  .withValues(alpha: 0.3),
+                                          blurRadius: 12,
+                                          offset: const Offset(0, 4),
+                                        ),
+                                      ],
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        Icon(
+                                          analysisState.error != null
+                                              ? Icons.warning_amber_rounded
+                                              : Icons.stars_rounded,
+                                          color: Colors.white,
+                                          size: 24,
+                                        ),
+                                        const SizedBox(width: 12),
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                analysisState.error != null
+                                                    ? 'Deep Analysis Failed ⛔'
+                                                    : 'Deep Analysis Ready ✨',
+                                                style: GoogleFonts.outfit(
+                                                  color: Colors.white,
+                                                  fontWeight: FontWeight.w700,
+                                                  fontSize: 14,
+                                                ),
+                                              ),
+                                              Text(
+                                                analysisState.error != null
+                                                    ? 'Tap to see what went wrong.'
+                                                    : 'Tap to view your personalized portfolio deep-dive.',
+                                                style: GoogleFonts.sora(
+                                                  color: Colors.white
+                                                      .withValues(alpha: 0.9),
+                                                  fontSize: 12,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        const Icon(
+                                          Icons.chevron_right_rounded,
+                                          color: Colors.white,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                )
+                                .animate()
+                                .shimmer(duration: 2.seconds)
+                                .scale(
+                                  begin: const Offset(0.95, 0.95),
+                                  end: const Offset(1, 1),
+                                  curve: Curves.easeOutBack,
+                                ),
+                      ),
+                    ),
+
+                  // ── Category Chips ──
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.only(top: 16),
+                      child: SizedBox(
+                        height: 40,
+                        child: ListView(
+                          scrollDirection: Axis.horizontal,
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          children: [
+                            _CategoryChip(
+                              label: 'All',
+                              icon: Icons.all_inclusive_rounded,
+                              isSelected: _selectedCategory == 'all',
+                              color: WealthColors.primary,
+                              onTap: () =>
+                                  setState(() => _selectedCategory = 'all'),
+                            ),
+                            ...counts.entries.map(
+                              (entry) => Padding(
+                                padding: const EdgeInsets.only(left: 8),
+                                child: _CategoryChip(
+                                  label:
+                                      '${entry.key.capitalize()} (${entry.value})',
+                                  icon: _getCategoryIcon(entry.key),
+                                  isSelected: _selectedCategory == entry.key,
+                                  color: _getCategoryColor(entry.key),
+                                  onTap: () => setState(
+                                    () => _selectedCategory = entry.key,
+                                  ),
+                                ),
                               ),
-                            )
-                            .animate()
-                            .fadeIn(delay: (50 * index).ms)
-                            .slideY(begin: 0.1, end: 0);
-                      }, childCount: filteredInsights.length),
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
                   ),
+
+                  if (insights.isEmpty)
+                    SliverFillRemaining(
+                      child: Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(24),
+                              decoration: BoxDecoration(
+                                color: WealthColors.primary.withValues(
+                                  alpha: 0.08,
+                                ),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(
+                                Icons.insights_rounded,
+                                size: 48,
+                                color: WealthColors.primary,
+                              ),
+                            ),
+                            const SizedBox(height: 20),
+                            Text(
+                              'No insights available',
+                              style: Theme.of(context).textTheme.titleMedium,
+                            ),
+                          ],
+                        ),
+                      ),
+                    )
+                  else
+                    SliverPadding(
+                      padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
+                      sliver: SliverList(
+                        delegate: SliverChildBuilderDelegate((context, index) {
+                          final insight = filteredInsights[index];
+                          return Padding(
+                                padding: const EdgeInsets.only(bottom: 12),
+                                child: _InsightCard(
+                                  insight: insight,
+                                  color: _getCategoryColor(insight.category),
+                                  icon: _getCategoryIcon(insight.category),
+                                  isDark: isDark,
+                                ),
+                              )
+                              .animate()
+                              .fadeIn(delay: (50 * index).ms)
+                              .slideY(begin: 0.1, end: 0);
+                        }, childCount: filteredInsights.length),
+                      ),
+                    ),
+                ],
               ],
             );
           },
@@ -444,6 +475,89 @@ class _InsightsScreenState extends ConsumerState<InsightsScreen> {
     );
   }
 
+  Widget _buildErrorStateWidget(Object err) {
+    final error = err.toString();
+    final lowercaseError = error.toLowerCase();
+
+    final isConfigError =
+        err is ConfigurationException ||
+        lowercaseError.contains('not configured') ||
+        lowercaseError.contains('missing_api_key') ||
+        lowercaseError.contains('api key');
+
+    final isAuthError =
+        lowercaseError.contains('401') ||
+        lowercaseError.contains('invalid') ||
+        lowercaseError.contains('api key');
+
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color:
+                    (isConfigError || isAuthError
+                            ? Colors.orange
+                            : WealthColors.error)
+                        .withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                isConfigError || isAuthError
+                    ? Icons.key_off_rounded
+                    : Icons.error_outline_rounded,
+                size: 48,
+                color: isConfigError || isAuthError
+                    ? Colors.orange
+                    : WealthColors.error,
+              ),
+            ),
+            const SizedBox(height: 24),
+            Text(
+              isConfigError ? 'API Key Required' : 'Analysis Error',
+              style: GoogleFonts.outfit(
+                fontSize: 19,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              error,
+              textAlign: TextAlign.center,
+              style: GoogleFonts.sora(
+                color: WealthColors.textMuted,
+                height: 1.5,
+              ),
+            ),
+            const SizedBox(height: 32),
+            if (isConfigError || isAuthError) ...[
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: () => context.push('/settings/llm-providers'),
+                  icon: const Icon(Icons.settings_rounded, size: 18),
+                  label: const Text('Go to Settings'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.orange,
+                    foregroundColor: Colors.white,
+                  ),
+                ),
+              ),
+            ] else
+              ElevatedButton.icon(
+                onPressed: _loadInsights,
+                icon: const Icon(Icons.refresh_rounded),
+                label: const Text('Retry'),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
 }
 
 // ─── Sub-Widgets ──────────────────────────────────────────────────────────────
@@ -551,7 +665,9 @@ class _InsightCard extends StatelessWidget {
                           style: GoogleFonts.outfit(
                             fontSize: 11,
                             fontWeight: FontWeight.w700,
-                            color: isDark ? WealthColors.textLight : WealthColors.textDark,
+                            color: isDark
+                                ? WealthColors.textLight
+                                : WealthColors.textDark,
                           ),
                         ),
                       ),
@@ -568,7 +684,9 @@ class _InsightCard extends StatelessWidget {
                     insight.description,
                     style: GoogleFonts.sora(
                       fontSize: 10,
-                      color: isDark ? WealthColors.textLight : WealthColors.textDark,
+                      color: isDark
+                          ? WealthColors.textLight
+                          : WealthColors.textDark,
                       height: 1.2,
                     ),
                   ),
@@ -577,7 +695,10 @@ class _InsightCard extends StatelessWidget {
                     const SizedBox(height: 6),
                     Text(
                       insight.metadata!.entries
-                          .map((MapEntry<String, dynamic> e) => '${e.key}: ${e.value}')
+                          .map(
+                            (MapEntry<String, dynamic> e) =>
+                                '${e.key}: ${e.value}',
+                          )
                           .join(', '),
                       style: GoogleFonts.sora(
                         fontSize: 9,
@@ -634,7 +755,6 @@ class _InsightCard extends StatelessWidget {
     if (diff.inMinutes > 0) return '${diff.inMinutes}m ago';
     return 'Just now';
   }
-
 }
 
 extension StringExtension on String {

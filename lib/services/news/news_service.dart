@@ -397,7 +397,11 @@ class NewsService {
         task: LlmTask.newsSummary,
       );
     } catch (e, stack) {
-      errorHandler.handleError(e, context: 'News AI Summary Error', stackTrace: stack);
+      errorHandler.handleError(
+        e,
+        context: 'News AI Summary Error',
+        stackTrace: stack,
+      );
       if (e is WealthLensException && e.isSilent) {
         return 'AI Summary unavailable: configuration required.';
       }
@@ -416,7 +420,7 @@ class FinnhubApiKeyNotifier extends AsyncNotifier<String?> {
   Future<void> updateKey(String? value) async {
     final trimmedValue = value?.trim();
     final dao = ref.read(settingDaoProvider);
-    
+
     if (trimmedValue != null && trimmedValue.isNotEmpty) {
       await dao.setValue('finnhub_api_key', trimmedValue);
       state = AsyncValue.data(trimmedValue);
@@ -429,8 +433,8 @@ class FinnhubApiKeyNotifier extends AsyncNotifier<String?> {
 
 final finnhubApiKeyProvider =
     AsyncNotifierProvider<FinnhubApiKeyNotifier, String?>(
-  FinnhubApiKeyNotifier.new,
-);
+      FinnhubApiKeyNotifier.new,
+    );
 
 final newsAdapterProvider = Provider<NewsAdapter>((ref) {
   final apiKeyAsync = ref.watch(finnhubApiKeyProvider);
@@ -458,7 +462,10 @@ class NewsCategoryNotifier extends Notifier<String> {
   @override
   set state(String value) => super.state = value;
 }
-final newsCategoryProvider = NotifierProvider<NewsCategoryNotifier, String>(NewsCategoryNotifier.new);
+
+final newsCategoryProvider = NotifierProvider<NewsCategoryNotifier, String>(
+  NewsCategoryNotifier.new,
+);
 
 class NewsSearchNotifier extends Notifier<String> {
   @override
@@ -466,22 +473,28 @@ class NewsSearchNotifier extends Notifier<String> {
   @override
   set state(String value) => super.state = value;
 }
-final newsSearchProvider = NotifierProvider<NewsSearchNotifier, String>(NewsSearchNotifier.new);
 
-final newsFeedProvider = FutureProvider<Map<String, List<NewsArticle>>>((ref) async {
+final newsSearchProvider = NotifierProvider<NewsSearchNotifier, String>(
+  NewsSearchNotifier.new,
+);
+
+final newsFeedProvider = FutureProvider<Map<String, List<NewsArticle>>>((
+  ref,
+) async {
   final searchQuery = ref.watch<String>(newsSearchProvider);
   final selectedCategory = ref.watch<String>(newsCategoryProvider);
-  
+
   final apiKeyAsync = ref.watch(finnhubApiKeyProvider);
-  
+
   // Fast path: if the key is already loaded and empty, throw immediately without awaiting future
-  if (apiKeyAsync.hasValue && (apiKeyAsync.value == null || apiKeyAsync.value!.trim().isEmpty)) {
+  if (apiKeyAsync.hasValue &&
+      (apiKeyAsync.value == null || apiKeyAsync.value!.trim().isEmpty)) {
     throw ConfigurationException(
       'Finnhub API key not configured. Please add it in Settings -> API Configuration.',
       code: 'MISSING_API_KEY',
     );
   }
-  
+
   // Wait for API key to be loaded from database if still loading
   final apiKey = await ref.watch(finnhubApiKeyProvider.future);
   if (apiKey == null || apiKey.trim().isEmpty) {
@@ -490,9 +503,9 @@ final newsFeedProvider = FutureProvider<Map<String, List<NewsArticle>>>((ref) as
       code: 'MISSING_API_KEY',
     );
   }
-  
+
   final service = ref.watch(newsServiceProvider);
-  
+
   if (searchQuery.isNotEmpty) {
     final searchResults = await service.searchNews(query: searchQuery);
     return {'market': searchResults, 'holdings': []};
@@ -502,17 +515,21 @@ final newsFeedProvider = FutureProvider<Map<String, List<NewsArticle>>>((ref) as
   } else {
     // Watch holdings to ensure news refresh when portfolio changes
     ref.watch(holdingsWithInstrumentsProvider);
-    
+
     final results = await Future.wait([
       service.getMarketNews(category: selectedCategory),
       service.getNewsForHoldings(),
     ]);
-    
+
     return {'market': results[0], 'holdings': results[1]};
   }
 });
 
-final newsSummaryProvider = FutureProvider.family<Map<String, dynamic>, List<NewsArticle>>((ref, articles) async {
-  final service = ref.watch(newsServiceProvider);
-  return service.getNewsSummary(articles: articles);
-});
+final newsSummaryProvider =
+    FutureProvider.family<Map<String, dynamic>, List<NewsArticle>>((
+      ref,
+      articles,
+    ) async {
+      final service = ref.watch(newsServiceProvider);
+      return service.getNewsSummary(articles: articles);
+    });

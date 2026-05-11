@@ -127,9 +127,9 @@ class _NetWorthInfoSheet extends ConsumerWidget {
           const SizedBox(height: 8),
           Text(
             'Your net worth is calculated by converting all assets into your base currency (${dashboardData.baseCurrency}) using current FX rates.',
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: WealthColors.textMuted,
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(color: WealthColors.textMuted),
           ),
           const SizedBox(height: 24),
           const Divider(),
@@ -179,7 +179,9 @@ class _NetWorthInfoSheet extends ConsumerWidget {
               label: const Text('Manage FX Rates'),
               style: OutlinedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
             ),
           ),
@@ -228,16 +230,17 @@ class _CurrencyInfoSheet extends StatelessWidget {
           const SizedBox(height: 16),
           _InfoRow(label: 'Total Native', value: summary.totalInNative),
           _InfoRow(
-            label: 'FX Rate (${summary.totalInBase.currency}/${summary.currency})',
+            label:
+                'FX Rate (${summary.totalInBase.currency}/${summary.currency})',
             value: summary.fxRateToBase?.toString() ?? '1.0',
           ),
           _InfoRow(label: 'Total in Base', value: summary.totalInBase),
           const SizedBox(height: 24),
           Text(
             'All investments held in ${summary.currency} are aggregated here. You can view individual holdings in the Holdings screen.',
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: WealthColors.textMuted,
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.bodySmall?.copyWith(color: WealthColors.textMuted),
           ),
         ],
       ),
@@ -284,9 +287,9 @@ class _AssetClassInfoSheet extends StatelessWidget {
           const SizedBox(height: 16),
           Text(
             'This asset class represents your investments in ${_formatAssetName(assetClass).toLowerCase()}. Values are converted to your base currency for aggregate reporting.',
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: WealthColors.textMuted,
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(color: WealthColors.textMuted),
           ),
         ],
       ),
@@ -308,23 +311,19 @@ class _InfoRow extends StatelessWidget {
         children: [
           Text(
             label,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: WealthColors.textMuted,
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(color: WealthColors.textMuted),
           ),
           if (value is Money)
             MoneyText(
               money: value as Money,
-              style: GoogleFonts.plusJakartaSans(
-                fontWeight: FontWeight.w700,
-              ),
+              style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w700),
             )
           else
             Text(
               value.toString(),
-              style: GoogleFonts.plusJakartaSans(
-                fontWeight: FontWeight.w700,
-              ),
+              style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w700),
             ),
         ],
       ),

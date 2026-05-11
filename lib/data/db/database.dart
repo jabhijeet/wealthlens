@@ -382,7 +382,7 @@ class AppDatabase extends _$AppDatabase {
   /// This is used for the "Delete All Data" feature in settings.
   Future<void> deleteAllData() async {
     await transaction(() async {
-      // Delete in reverse order of dependencies if possible, 
+      // Delete in reverse order of dependencies if possible,
       // but drift handles transactions well.
       // We'll go through all tables defined in the database.
       for (final table in allTables) {

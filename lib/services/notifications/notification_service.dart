@@ -599,8 +599,6 @@ class NotificationService {
   }
 }
 
-
-
 // Riverpod provider
 final notificationServiceProvider = Provider<NotificationService>((ref) {
   return NotificationService(

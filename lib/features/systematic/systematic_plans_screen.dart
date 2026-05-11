@@ -382,10 +382,7 @@ class _Metric extends StatelessWidget {
         ),
         Text(
           value,
-          style: GoogleFonts.outfit(
-            fontSize: 15,
-            fontWeight: FontWeight.w700,
-          ),
+          style: GoogleFonts.outfit(fontSize: 15, fontWeight: FontWeight.w700),
         ),
       ],
     );

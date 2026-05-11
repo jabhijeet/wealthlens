@@ -122,14 +122,18 @@ class DashboardScreen extends ConsumerWidget {
                                   style: GoogleFonts.outfit(
                                     fontSize: 13,
                                     fontWeight: FontWeight.w700,
-                                    color: isDark ? Colors.white : Colors.black87,
+                                    color: isDark
+                                        ? Colors.white
+                                        : Colors.black87,
                                   ),
                                 ),
                                 const SizedBox(width: 4),
                                 Icon(
                                   Icons.keyboard_arrow_down_rounded,
                                   size: 16,
-                                  color: isDark ? Colors.white70 : Colors.black54,
+                                  color: isDark
+                                      ? Colors.white70
+                                      : Colors.black54,
                                 ),
                               ],
                             ),
@@ -228,19 +232,25 @@ class DashboardScreen extends ConsumerWidget {
               decoration: BoxDecoration(
                 color: WealthColors.error.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: WealthColors.error.withValues(alpha: 0.3)),
+                border: Border.all(
+                  color: WealthColors.error.withValues(alpha: 0.3),
+                ),
               ),
               child: Row(
                 children: [
-                  Icon(Icons.cloud_off_rounded, color: WealthColors.error, size: 20),
+                  Icon(
+                    Icons.cloud_off_rounded,
+                    color: WealthColors.error,
+                    size: 20,
+                  ),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
                       'Market rates unavailable. Using cost-basis or 1:1 fallbacks.',
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: WealthColors.error,
-                            fontWeight: FontWeight.w600,
-                          ),
+                        color: WealthColors.error,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
                 ],
@@ -294,7 +304,6 @@ class DashboardScreen extends ConsumerWidget {
               ),
             ),
 
-
           // ── Asset Class Breakdown ──
           SliverToBoxAdapter(
             child: Padding(
@@ -302,7 +311,10 @@ class DashboardScreen extends ConsumerWidget {
               child: Text(
                 'Breakdown',
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontSize: (Theme.of(context).textTheme.titleMedium?.fontSize ?? 18) * 0.9,
+                  fontSize:
+                      (Theme.of(context).textTheme.titleMedium?.fontSize ??
+                          18) *
+                      0.9,
                 ),
               ),
             ),

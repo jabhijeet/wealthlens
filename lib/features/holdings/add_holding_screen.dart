@@ -143,14 +143,19 @@ class _AddHoldingScreenState extends ConsumerState<AddHoldingScreen> {
 
       if (_hasStandardQuantityAndPrice(ac)) {
         avgCost = double.tryParse(_avgCostController.text) ?? 0.0;
-        quantity = _quantityController.text.isNotEmpty ? _quantityController.text : '1';
+        quantity = _quantityController.text.isNotEmpty
+            ? _quantityController.text
+            : '1';
       } else if (ac == AssetClass.cash || ac == AssetClass.epf) {
-        quantity = _quantityController.text.isNotEmpty ? _quantityController.text : '0';
+        quantity = _quantityController.text.isNotEmpty
+            ? _quantityController.text
+            : '0';
         avgCost = 1.0;
       } else if (ac.name.contains('realEstate')) {
         avgCost = double.tryParse(_avgCostController.text) ?? 0.0;
         quantity = '1';
-      } else if (ac == AssetClass.fixedDeposit || ac == AssetClass.recurringDeposit) {
+      } else if (ac == AssetClass.fixedDeposit ||
+          ac == AssetClass.recurringDeposit) {
         avgCost = double.tryParse(_principalController.text) ?? 0.0;
         quantity = '1';
       } else if (ac == AssetClass.ppf) {
@@ -283,51 +288,51 @@ class _AddHoldingScreenState extends ConsumerState<AddHoldingScreen> {
         ),
       ),
       body: Form(
-              key: _formKey,
-              child: ListView(
-                padding: const EdgeInsets.fromLTRB(20, 16, 20, 40),
-                children: [
-                  if (_isCreatingNewInstrument) ...[
-                    _buildSectionTitle('Instrument Details'),
-                    const SizedBox(height: 12),
-                    _buildInstrumentCreationFields(isDark),
-                    const SizedBox(height: 32),
-                  ] else ...[
-                    _buildInstrumentHeader(isDark),
-                    const SizedBox(height: 24),
-                  ],
-                  _buildSectionTitle('Holding Details'),
-                  const SizedBox(height: 12),
-                  ..._buildBasicFields(),
-                  if (_isSpecializedAsset()) ...[
-                    const SizedBox(height: 32),
-                    _buildSectionTitle('Additional Details'),
-                    const SizedBox(height: 12),
-                    ..._buildSpecializedFields(isDark),
-                  ],
-                  const SizedBox(height: 40),
-                  ElevatedButton(
-                    onPressed: _submit,
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      backgroundColor: WealthColors.primary,
-                      foregroundColor: Colors.white,
-                      elevation: 0,
-                    ),
-                    child: Text(
-                      'Save Holding',
-                      style: GoogleFonts.outfit(
-                        fontWeight: FontWeight.w700,
-                        fontSize: 16,
-                      ),
-                    ),
-                  ),
-                ],
+        key: _formKey,
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(20, 16, 20, 40),
+          children: [
+            if (_isCreatingNewInstrument) ...[
+              _buildSectionTitle('Instrument Details'),
+              const SizedBox(height: 12),
+              _buildInstrumentCreationFields(isDark),
+              const SizedBox(height: 32),
+            ] else ...[
+              _buildInstrumentHeader(isDark),
+              const SizedBox(height: 24),
+            ],
+            _buildSectionTitle('Holding Details'),
+            const SizedBox(height: 12),
+            ..._buildBasicFields(),
+            if (_isSpecializedAsset()) ...[
+              const SizedBox(height: 32),
+              _buildSectionTitle('Additional Details'),
+              const SizedBox(height: 12),
+              ..._buildSpecializedFields(isDark),
+            ],
+            const SizedBox(height: 40),
+            ElevatedButton(
+              onPressed: _submit,
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                backgroundColor: WealthColors.primary,
+                foregroundColor: Colors.white,
+                elevation: 0,
+              ),
+              child: Text(
+                'Save Holding',
+                style: GoogleFonts.outfit(
+                  fontWeight: FontWeight.w700,
+                  fontSize: 16,
+                ),
               ),
             ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -388,10 +393,7 @@ class _AddHoldingScreenState extends ConsumerState<AddHoldingScreen> {
             ),
           ),
           IconButton(
-            icon: const Icon(
-              Icons.close_rounded,
-              color: Colors.grey,
-            ),
+            icon: const Icon(Icons.close_rounded, color: Colors.grey),
             onPressed: () {
               setState(() {
                 _selectedInstrument = null;
@@ -570,9 +572,13 @@ class _AddHoldingScreenState extends ConsumerState<AddHoldingScreen> {
         _buildDropdown<String>(
           initialSelection: _selectedCurrency,
           label: 'Currency',
-          entries: ['INR', 'USD', 'SGD', 'EUR', 'GBP']
-              .map((e) => DropdownMenuEntry(value: e, label: e))
-              .toList(),
+          entries: [
+            'INR',
+            'USD',
+            'SGD',
+            'EUR',
+            'GBP',
+          ].map((e) => DropdownMenuEntry(value: e, label: e)).toList(),
           onSelected: (v) {
             if (v != null) setState(() => _selectedCurrency = v);
           },
@@ -682,8 +688,8 @@ class _AddHoldingScreenState extends ConsumerState<AddHoldingScreen> {
     final ac = _isCreatingNewInstrument
         ? _selectedAssetClass
         : _selectedInstrument!.assetClass;
-    final currency = _isCreatingNewInstrument 
-        ? _selectedCurrency 
+    final currency = _isCreatingNewInstrument
+        ? _selectedCurrency
         : _selectedInstrument!.currency;
 
     final fields = <Widget>[
@@ -721,7 +727,9 @@ class _AddHoldingScreenState extends ConsumerState<AddHoldingScreen> {
               child: TextFormField(
                 controller: _avgCostController,
                 decoration: InputDecoration(
-                  labelText: ac == AssetClass.bond ? 'Price %' : 'Avg Cost ($currency)',
+                  labelText: ac == AssetClass.bond
+                      ? 'Price %'
+                      : 'Avg Cost ($currency)',
                   hintText: 'e.g. 150.25',
                 ),
                 keyboardType: const TextInputType.numberWithOptions(
@@ -738,7 +746,9 @@ class _AddHoldingScreenState extends ConsumerState<AddHoldingScreen> {
       fields.addAll([
         TextFormField(
           controller: _quantityController,
-          decoration: InputDecoration(labelText: 'Balance / Amount ($currency)'),
+          decoration: InputDecoration(
+            labelText: 'Balance / Amount ($currency)',
+          ),
           keyboardType: const TextInputType.numberWithOptions(decimal: true),
           validator: (v) => v?.isEmpty ?? true ? 'Required' : null,
         ),
@@ -748,7 +758,9 @@ class _AddHoldingScreenState extends ConsumerState<AddHoldingScreen> {
       fields.addAll([
         TextFormField(
           controller: _avgCostController,
-          decoration: InputDecoration(labelText: 'Acquisition Cost ($currency)'),
+          decoration: InputDecoration(
+            labelText: 'Acquisition Cost ($currency)',
+          ),
           keyboardType: const TextInputType.numberWithOptions(decimal: true),
           validator: (v) => v?.isEmpty ?? true ? 'Required' : null,
         ),

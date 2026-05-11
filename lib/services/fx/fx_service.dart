@@ -164,7 +164,8 @@ class LlmFxFeed implements FxFeed {
     }
 
     try {
-      final prompt = '''
+      final prompt =
+          '''
 Return the current exchange rate for $base to $quote. 
 Provide only the numerical value as a decimal.
 No text, no units, just the number.
@@ -207,7 +208,8 @@ If you don't know the exact current rate, provide your best recent estimate.
 
 class FxService {
   FxService(this._dao, {List<FxFeed>? feeds, Ref? ref})
-    : _feeds = feeds ??
+    : _feeds =
+          feeds ??
           (kIsWeb
               ? [
                   ExchangeRateHostFeed(),
@@ -241,7 +243,12 @@ class FxService {
     return getRate(base, quote); // Fallback to whatever we have
   }
 
-  Future<void> _saveToCache(String base, String quote, Decimal rate, String source) async {
+  Future<void> _saveToCache(
+    String base,
+    String quote,
+    Decimal rate,
+    String source,
+  ) async {
     await _dao.insertOrUpdate(
       FxRatesCompanion(
         date: Value(DateTime.now()),
@@ -253,12 +260,19 @@ class FxService {
     );
   }
 
-  Future<Decimal?> _getValidCache(String base, String quote, {bool inverse = false}) async {
+  Future<Decimal?> _getValidCache(
+    String base,
+    String quote, {
+    bool inverse = false,
+  }) async {
     final cached = await _dao.getLatest(base, quote);
     if (cached == null) return null;
 
     final rate = Decimal.parse(cached.rate);
-    final cacheLimit = (cached.source == 'manual' || cached.source == 'AI Intelligence') ? 168 : 12;
+    final cacheLimit =
+        (cached.source == 'manual' || cached.source == 'AI Intelligence')
+        ? 168
+        : 12;
 
     if (DateTime.now().difference(cached.date).inHours < cacheLimit) {
       if (inverse) {
@@ -312,14 +326,14 @@ class FxService {
     if (stale != null) {
       return Decimal.parse(stale.rate);
     }
-    
+
     final staleInverse = await _dao.getLatest(quote, base);
     if (staleInverse != null) {
       final rate = Decimal.parse(staleInverse.rate);
       if (rate == Decimal.zero) return Decimal.one;
       return (Decimal.one / rate).toDecimal(scaleOnInfinitePrecision: 10);
     }
-    
+
     return Decimal.one;
   }
 
@@ -351,4 +365,3 @@ final fxServiceProvider = Provider<FxService>((ref) {
   final dao = ref.watch(fxRateDaoProvider);
   return FxService(dao, ref: ref);
 });
-

@@ -267,8 +267,9 @@ class DocumentParserService {
       // For FD/RD/PPF/Insurance, create specific accounts
       if (parsed.assetClass == 'fixedDeposit' ||
           parsed.assetClass == 'recurringDeposit') {
+        final principalAmount = parsed.notionalValue ?? (parsed.quantity * parsed.averagePrice);
         final principal = Money.fromDouble(
-          parsed.quantity,
+          principalAmount,
           currency: parsed.currency,
         );
         await _fdDao.insert(
@@ -291,8 +292,9 @@ class DocumentParserService {
           ),
         );
       } else if (parsed.assetClass.contains('insurance')) {
+        final premiumAmount = parsed.quantity * parsed.averagePrice;
         final premium = Money.fromDouble(
-          parsed.averagePrice,
+          premiumAmount,
           currency: parsed.currency,
         );
         await _insDao.insert(

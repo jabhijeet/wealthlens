@@ -29,15 +29,20 @@ class _ActivityScreenState extends ConsumerState<ActivityScreen> {
     try {
       final notificationDao = ref.read(notificationDaoProvider);
       final transactionDao = ref.read(transactionDaoProvider);
-      
+
       final notifications = await notificationDao.getAllNotifications();
       final transactions = await transactionDao.getRecent();
-      
-      final items = [...notifications, ...transactions]..sort((a, b) {
-        final dateA = a is db.Notification ? a.firedAt : (a as db.Transaction).date;
-        final dateB = b is db.Notification ? b.firedAt : (b as db.Transaction).date;
-        return dateB.compareTo(dateA);
-      });
+
+      final items = [...notifications, ...transactions]
+        ..sort((a, b) {
+          final dateA = a is db.Notification
+              ? a.firedAt
+              : (a as db.Transaction).date;
+          final dateB = b is db.Notification
+              ? b.firedAt
+              : (b as db.Transaction).date;
+          return dateB.compareTo(dateA);
+        });
 
       setState(() {
         _activityItems = items;
@@ -46,9 +51,9 @@ class _ActivityScreenState extends ConsumerState<ActivityScreen> {
     } catch (e) {
       setState(() => _isLoading = false);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error loading activity: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error loading activity: $e')));
       }
     }
   }
@@ -58,12 +63,16 @@ class _ActivityScreenState extends ConsumerState<ActivityScreen> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: isDark ? WealthColors.surfaceDark : WealthColors.surfaceLight,
+      backgroundColor: isDark
+          ? WealthColors.surfaceDark
+          : WealthColors.surfaceLight,
       body: CustomScrollView(
         slivers: [
           _buildAppBar(),
           if (_isLoading)
-            const SliverFillRemaining(child: Center(child: CircularProgressIndicator()))
+            const SliverFillRemaining(
+              child: Center(child: CircularProgressIndicator()),
+            )
           else if (_activityItems.isEmpty)
             _buildEmptyState(isDark)
           else
@@ -71,7 +80,8 @@ class _ActivityScreenState extends ConsumerState<ActivityScreen> {
               padding: const EdgeInsets.all(16),
               sliver: SliverList(
                 delegate: SliverChildBuilderDelegate(
-                  (context, index) => _buildActivityItem(_activityItems[index], isDark),
+                  (context, index) =>
+                      _buildActivityItem(_activityItems[index], isDark),
                   childCount: _activityItems.length,
                 ),
               ),
@@ -171,7 +181,11 @@ class _NotificationItem extends StatelessWidget {
               color: WealthColors.primary.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
-            child: const Icon(Icons.notifications_active_outlined, color: WealthColors.primary, size: 20),
+            child: const Icon(
+              Icons.notifications_active_outlined,
+              color: WealthColors.primary,
+              size: 20,
+            ),
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -180,17 +194,28 @@ class _NotificationItem extends StatelessWidget {
               children: [
                 Text(
                   notification.title,
-                  style: GoogleFonts.inter(fontWeight: FontWeight.w600, fontSize: 15),
+                  style: GoogleFonts.inter(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 15,
+                  ),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   notification.body,
-                  style: GoogleFonts.inter(fontSize: 13, color: WealthColors.textMuted),
+                  style: GoogleFonts.inter(
+                    fontSize: 13,
+                    color: WealthColors.textMuted,
+                  ),
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  DateFormat('MMM dd, yyyy • hh:mm a').format(notification.firedAt),
-                  style: GoogleFonts.inter(fontSize: 11, color: WealthColors.textMuted.withValues(alpha: 0.7)),
+                  DateFormat(
+                    'MMM dd, yyyy • hh:mm a',
+                  ).format(notification.firedAt),
+                  style: GoogleFonts.inter(
+                    fontSize: 11,
+                    color: WealthColors.textMuted.withValues(alpha: 0.7),
+                  ),
                 ),
               ],
             ),
@@ -208,9 +233,10 @@ class _TransactionItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isBuy = transaction.type == db.TransactionType.buy || 
-                  transaction.type == db.TransactionType.contribution;
-    
+    final isBuy =
+        transaction.type == db.TransactionType.buy ||
+        transaction.type == db.TransactionType.contribution;
+
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
@@ -246,7 +272,10 @@ class _TransactionItem extends StatelessWidget {
                   children: [
                     Text(
                       '${transaction.type.name.toUpperCase()} Transaction',
-                      style: GoogleFonts.inter(fontWeight: FontWeight.w600, fontSize: 15),
+                      style: GoogleFonts.inter(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 15,
+                      ),
                     ),
                     Text(
                       '${isBuy ? "+" : "-"}${transaction.quantity}',
@@ -261,13 +290,19 @@ class _TransactionItem extends StatelessWidget {
                   const SizedBox(height: 4),
                   Text(
                     transaction.notes!,
-                    style: GoogleFonts.inter(fontSize: 13, color: WealthColors.textMuted),
+                    style: GoogleFonts.inter(
+                      fontSize: 13,
+                      color: WealthColors.textMuted,
+                    ),
                   ),
                 ],
                 const SizedBox(height: 8),
                 Text(
                   DateFormat('MMM dd, yyyy • hh:mm a').format(transaction.date),
-                  style: GoogleFonts.inter(fontSize: 11, color: WealthColors.textMuted.withValues(alpha: 0.7)),
+                  style: GoogleFonts.inter(
+                    fontSize: 11,
+                    color: WealthColors.textMuted.withValues(alpha: 0.7),
+                  ),
                 ),
               ],
             ),

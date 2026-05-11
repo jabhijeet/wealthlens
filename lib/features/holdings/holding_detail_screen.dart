@@ -20,12 +20,13 @@ class HoldingDetailScreen extends ConsumerStatefulWidget {
   final String holdingId;
 
   @override
-  ConsumerState<HoldingDetailScreen> createState() => _HoldingDetailScreenState();
+  ConsumerState<HoldingDetailScreen> createState() =>
+      _HoldingDetailScreenState();
 }
 
 class _HoldingDetailScreenState extends ConsumerState<HoldingDetailScreen> {
   bool _isEditing = false;
-  
+
   // Controllers
   late TextEditingController _nameController;
   late TextEditingController _symbolController;
@@ -36,7 +37,7 @@ class _HoldingDetailScreenState extends ConsumerState<HoldingDetailScreen> {
   late TextEditingController _isinController;
   late TextEditingController _exchangeController;
   late TextEditingController _currencyController;
-  
+
   Country? _selectedCountry;
   String? _selectedCurrency;
   AssetClass? _selectedAssetClass;
@@ -97,12 +98,12 @@ class _HoldingDetailScreenState extends ConsumerState<HoldingDetailScreen> {
         if (item != null && !_isEditing && _nameController.text.isEmpty) {
           _initControllers(item);
         }
-        
+
         return Scaffold(
           appBar: AppBar(
-            title: _isEditing 
-              ? const Text('Edit Holding')
-              : Text(item?.instrument.name ?? 'Holding Details'),
+            title: _isEditing
+                ? const Text('Edit Holding')
+                : Text(item?.instrument.name ?? 'Holding Details'),
             actions: [
               if (item != null) ...[
                 if (_isEditing)
@@ -120,7 +121,11 @@ class _HoldingDetailScreenState extends ConsumerState<HoldingDetailScreen> {
                     },
                   ),
                 IconButton(
-                  icon: Icon(_isEditing ? Icons.close_rounded : Icons.delete_outline_rounded),
+                  icon: Icon(
+                    _isEditing
+                        ? Icons.close_rounded
+                        : Icons.delete_outline_rounded,
+                  ),
                   onPressed: () {
                     if (_isEditing) {
                       setState(() => _isEditing = false);
@@ -184,7 +189,11 @@ class _HoldingDetailScreenState extends ConsumerState<HoldingDetailScreen> {
     final color = _getColor(instrument.assetClass);
 
     final bookValue = Money(
-      minor: (Decimal.parse(holding.quantity) * Decimal.fromInt(holding.avgCostMinor)).toBigInt().toInt(),
+      minor:
+          (Decimal.parse(holding.quantity) *
+                  Decimal.fromInt(holding.avgCostMinor))
+              .toBigInt()
+              .toInt(),
       currency: instrument.currency,
     );
 
@@ -259,7 +268,8 @@ class _HoldingDetailScreenState extends ConsumerState<HoldingDetailScreen> {
                     letterSpacing: -0.5,
                   ),
                 ),
-                if (instrument.symbol != null && instrument.symbol!.isNotEmpty) ...[
+                if (instrument.symbol != null &&
+                    instrument.symbol!.isNotEmpty) ...[
                   const SizedBox(height: 2),
                   Text(
                     instrument.symbol!,
@@ -321,13 +331,14 @@ class _HoldingDetailScreenState extends ConsumerState<HoldingDetailScreen> {
               ),
               if (instrument.isin != null && instrument.isin!.isNotEmpty)
                 _MetricItem('ISIN', instrument.isin!),
-              if (instrument.exchange != null && instrument.exchange!.isNotEmpty)
+              if (instrument.exchange != null &&
+                  instrument.exchange!.isNotEmpty)
                 _MetricItem('Exchange', instrument.exchange!),
               _MetricItem('Country', instrument.country.name.toUpperCase()),
             ],
             isDark: isDark,
           ),
-          
+
           if (holding.notes != null && holding.notes!.isNotEmpty) ...[
             const SizedBox(height: 16),
             Container(
@@ -336,7 +347,9 @@ class _HoldingDetailScreenState extends ConsumerState<HoldingDetailScreen> {
                 color: isDark ? WealthColors.cardDark : WealthColors.cardLight,
                 borderRadius: BorderRadius.circular(14),
                 border: Border.all(
-                  color: isDark ? WealthColors.borderDark : WealthColors.borderLight,
+                  color: isDark
+                      ? WealthColors.borderDark
+                      : WealthColors.borderLight,
                 ),
               ),
               child: Column(
@@ -364,7 +377,11 @@ class _HoldingDetailScreenState extends ConsumerState<HoldingDetailScreen> {
     );
   }
 
-  Widget _buildEditForm(BuildContext context, HoldingWithInstrument item, bool isDark) {
+  Widget _buildEditForm(
+    BuildContext context,
+    HoldingWithInstrument item,
+    bool isDark,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -389,27 +406,30 @@ class _HoldingDetailScreenState extends ConsumerState<HoldingDetailScreen> {
         ),
         _buildTextField(_isinController, 'ISIN'),
         _buildTextField(_exchangeController, 'Exchange'),
-        _buildTextField(_currencyController, 'Currency (ISO)', 
-          onChanged: (val) => setState(() => _selectedCurrency = val.toUpperCase()),
+        _buildTextField(
+          _currencyController,
+          'Currency (ISO)',
+          onChanged: (val) =>
+              setState(() => _selectedCurrency = val.toUpperCase()),
         ),
-        
+
         const SizedBox(height: 24),
         _buildSectionHeader('Holding Details'),
         _buildTextField(_accountController, 'Account / Folio'),
         _buildTextField(
-          _quantityController, 
-          'Quantity', 
+          _quantityController,
+          'Quantity',
           keyboardType: const TextInputType.numberWithOptions(decimal: true),
           inputFormatters: [CurrencyInputFormatter()],
         ),
         _buildTextField(
-          _avgCostController, 
-          'Avg Cost (${item.instrument.currency})', 
+          _avgCostController,
+          'Avg Cost (${item.instrument.currency})',
           keyboardType: const TextInputType.numberWithOptions(decimal: true),
           inputFormatters: [CurrencyInputFormatter()],
         ),
         _buildTextField(_notesController, 'Notes', maxLines: 2),
-        
+
         const SizedBox(height: 80), // Space for bottom
       ],
     );
@@ -431,7 +451,7 @@ class _HoldingDetailScreenState extends ConsumerState<HoldingDetailScreen> {
   }
 
   Widget _buildTextField(
-    TextEditingController controller, 
+    TextEditingController controller,
     String label, {
     TextInputType? keyboardType,
     int maxLines = 1,
@@ -450,7 +470,10 @@ class _HoldingDetailScreenState extends ConsumerState<HoldingDetailScreen> {
         decoration: InputDecoration(
           labelText: label,
           labelStyle: GoogleFonts.sora(fontSize: 13),
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 12,
+          ),
           border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
         ),
       ),
@@ -476,8 +499,12 @@ class _HoldingDetailScreenState extends ConsumerState<HoldingDetailScreen> {
             backgroundColor: Colors.transparent,
             builder: (context) => Container(
               decoration: BoxDecoration(
-                color: isDark ? WealthColors.surfaceDark : WealthColors.surfaceLight,
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+                color: isDark
+                    ? WealthColors.surfaceDark
+                    : WealthColors.surfaceLight,
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(28),
+                ),
               ),
               child: SafeArea(
                 child: Column(
@@ -504,11 +531,18 @@ class _HoldingDetailScreenState extends ConsumerState<HoldingDetailScreen> {
                             title: Text(
                               itemLabel(item),
                               style: GoogleFonts.sora(
-                                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                                fontWeight: isSelected
+                                    ? FontWeight.w700
+                                    : FontWeight.w500,
                                 color: isSelected ? WealthColors.primary : null,
                               ),
                             ),
-                            trailing: isSelected ? const Icon(Icons.check, color: WealthColors.primary) : null,
+                            trailing: isSelected
+                                ? const Icon(
+                                    Icons.check,
+                                    color: WealthColors.primary,
+                                  )
+                                : null,
                             onTap: () {
                               onChanged(item);
                               Navigator.pop(context);
@@ -527,7 +561,10 @@ class _HoldingDetailScreenState extends ConsumerState<HoldingDetailScreen> {
           decoration: InputDecoration(
             labelText: label,
             labelStyle: GoogleFonts.sora(fontSize: 13),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 12,
+            ),
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
           ),
           child: Row(
@@ -556,7 +593,7 @@ class _HoldingDetailScreenState extends ConsumerState<HoldingDetailScreen> {
     final notes = _notesController.text;
     final isin = _isinController.text;
     final exchange = _exchangeController.text;
-    
+
     final instrumentDao = ref.read(instrumentDaoProvider);
     final holdingDao = ref.read(holdingDaoProvider);
 
@@ -587,9 +624,9 @@ class _HoldingDetailScreenState extends ConsumerState<HoldingDetailScreen> {
       ref
         ..invalidate(holdingDetailWithInstrumentProvider(widget.holdingId))
         ..invalidate(holdingsWithInstrumentsProvider);
-      
+
       setState(() => _isEditing = false);
-      
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Changes saved successfully')),
@@ -597,9 +634,9 @@ class _HoldingDetailScreenState extends ConsumerState<HoldingDetailScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error saving changes: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error saving changes: $e')));
       }
     }
   }
@@ -641,8 +678,9 @@ class _HoldingDetailScreenState extends ConsumerState<HoldingDetailScreen> {
         if (snapshot == null) return const SizedBox.shrink();
 
         final quantity = Decimal.parse(item.holding.quantity);
-        final marketMinor =
-            (quantity * Decimal.fromInt(snapshot.closeMinor)).toBigInt().toInt();
+        final marketMinor = (quantity * Decimal.fromInt(snapshot.closeMinor))
+            .toBigInt()
+            .toInt();
         final marketValue = Money(
           minor: marketMinor,
           currency: item.instrument.currency,
@@ -661,7 +699,9 @@ class _HoldingDetailScreenState extends ConsumerState<HoldingDetailScreen> {
             color: isDark ? WealthColors.cardDark : WealthColors.cardLight,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
-              color: isDark ? WealthColors.borderDark : WealthColors.borderLight,
+              color: isDark
+                  ? WealthColors.borderDark
+                  : WealthColors.borderLight,
             ),
           ),
           child: Row(
@@ -670,8 +710,10 @@ class _HoldingDetailScreenState extends ConsumerState<HoldingDetailScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Market Value',
-                        style: Theme.of(context).textTheme.labelMedium),
+                    Text(
+                      'Market Value',
+                      style: Theme.of(context).textTheme.labelMedium,
+                    ),
                     const SizedBox(height: 4),
                     MoneyText(
                       money: marketValue,
@@ -689,7 +731,10 @@ class _HoldingDetailScreenState extends ConsumerState<HoldingDetailScreen> {
                   Text('P&L', style: Theme.of(context).textTheme.labelMedium),
                   const SizedBox(height: 4),
                   MoneyText(
-                    money: Money(minor: pnlMinor, currency: item.instrument.currency),
+                    money: Money(
+                      minor: pnlMinor,
+                      currency: item.instrument.currency,
+                    ),
                     showPlusSign: true,
                     style: GoogleFonts.outfit(
                       fontSize: 15,
@@ -849,7 +894,11 @@ class _HoldingDetailScreenState extends ConsumerState<HoldingDetailScreen> {
                   ),
                   MoneyText(
                     money: Money(
-                      minor: (Decimal.parse(tx.quantity) * Decimal.fromInt(tx.priceMinor)).toBigInt().toInt(),
+                      minor:
+                          (Decimal.parse(tx.quantity) *
+                                  Decimal.fromInt(tx.priceMinor))
+                              .toBigInt()
+                              .toInt(),
                       currency: instrument.currency,
                     ),
                     style: GoogleFonts.sora(
@@ -1190,15 +1239,13 @@ class _MetricsGrid extends StatelessWidget {
   }
 }
 
-
-
 // ─── Providers (kept as-is) ───────────────────────────────────────────────────
 
 final _latestPriceSnapshotProvider =
     FutureProvider.family<PriceSnapshot?, String>((ref, instrumentId) async {
-  final dao = ref.watch(priceSnapshotDaoProvider);
-  return dao.getLatest(instrumentId);
-});
+      final dao = ref.watch(priceSnapshotDaoProvider);
+      return dao.getLatest(instrumentId);
+    });
 
 final holdingDetailWithInstrumentProvider =
     FutureProvider.family<HoldingWithInstrument?, String>((

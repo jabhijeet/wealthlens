@@ -63,7 +63,9 @@ class LlmStatusBox extends ConsumerWidget {
           ),
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
           decoration: BoxDecoration(
-            color: (isDark ? WealthColors.cardDark : Colors.white).withValues(alpha: 0.9),
+            color: (isDark ? WealthColors.cardDark : Colors.white).withValues(
+              alpha: 0.9,
+            ),
             borderRadius: BorderRadius.circular(12),
             border: Border.all(color: color.withValues(alpha: 0.5)),
             boxShadow: [

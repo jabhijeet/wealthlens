@@ -15,9 +15,10 @@ final optimizedDashboardDataProvider = FutureProvider<DashboardState>((
 });
 
 Future<DashboardState> _calculateDashboardData(Ref ref) async {
-  final holdingsWithInstruments = await ref.watch<Future<List<HoldingWithInstrument>>>(
-    holdingsWithInstrumentsProvider.future,
-  );
+  final holdingsWithInstruments = await ref
+      .watch<Future<List<HoldingWithInstrument>>>(
+        holdingsWithInstrumentsProvider.future,
+      );
   final fxService = ref.watch(fxServiceProvider);
   final baseCurrency = ref.watch(selectedCurrencyProvider);
 
@@ -38,7 +39,9 @@ Future<DashboardState> _calculateDashboardData(Ref ref) async {
 
   // Batch-fetch all price snapshots in one query instead of N+1
   final priceDao = ref.read(priceSnapshotDaoProvider);
-  final allInstrumentIds = holdingsWithInstruments.map((h) => h.instrument.id).toList();
+  final allInstrumentIds = holdingsWithInstruments
+      .map((h) => h.instrument.id)
+      .toList();
   final priceMap = await priceDao.getLatestBatch(allInstrumentIds);
   final twoSnapshotMap = await priceDao.getTwoLatestBatch(allInstrumentIds);
 
@@ -80,18 +83,21 @@ Future<DashboardState> _calculateDashboardData(Ref ref) async {
     );
 
     final baseValueDouble = baseMoney.decimal.toDouble();
-    currencyAllocation[currency] = (currencyAllocation[currency] ?? 0) + baseValueDouble;
+    currencyAllocation[currency] =
+        (currencyAllocation[currency] ?? 0) + baseValueDouble;
 
     grandTotalMinor += baseMoney.minor;
 
     _updateAssetAllocationFromCache(assetAllocation, holdings, priceMap, rate);
-    
+
     // Update country allocation
     for (final holding in holdings) {
       final country = holding.instrument.country.name;
       final nativeTotal = _calculateNativeTotalFromCache([holding], priceMap);
-      final baseHoldingValue = Money(minor: nativeTotal, currency: currency).decimal * rate;
-      countryAllocation[country] = (countryAllocation[country] ?? 0) + baseHoldingValue.toDouble();
+      final baseHoldingValue =
+          Money(minor: nativeTotal, currency: currency).decimal * rate;
+      countryAllocation[country] =
+          (countryAllocation[country] ?? 0) + baseHoldingValue.toDouble();
     }
   }
 
@@ -105,7 +111,8 @@ Future<DashboardState> _calculateDashboardData(Ref ref) async {
 
   var hasFxError = false;
   for (final summary in currencySummaries) {
-    if (summary.currency != baseCurrency && summary.fxRateToBase == Decimal.one) {
+    if (summary.currency != baseCurrency &&
+        summary.fxRateToBase == Decimal.one) {
       hasFxError = true;
       break;
     }
@@ -113,7 +120,10 @@ Future<DashboardState> _calculateDashboardData(Ref ref) async {
 
   return DashboardState(
     currencySummaries: currencySummaries,
-    totalValueInBaseCurrency: Money(minor: grandTotalMinor, currency: baseCurrency),
+    totalValueInBaseCurrency: Money(
+      minor: grandTotalMinor,
+      currency: baseCurrency,
+    ),
     assetAllocation: assetAllocation,
     countryAllocation: countryAllocation,
     currencyAllocation: currencyAllocation,
@@ -142,7 +152,8 @@ int _calculateNativeTotalFromCache(
 ) {
   var totalMinor = 0;
   for (final h in holdings) {
-    final priceMinor = priceMap[h.instrument.id]?.closeMinor ?? h.holding.avgCostMinor;
+    final priceMinor =
+        priceMap[h.instrument.id]?.closeMinor ?? h.holding.avgCostMinor;
     final quantity = Decimal.parse(h.holding.quantity);
     totalMinor += (quantity * Decimal.fromInt(priceMinor)).toBigInt().toInt();
   }
@@ -157,7 +168,8 @@ void _updateAssetAllocationFromCache(
   Decimal rate,
 ) {
   for (final h in holdings) {
-    final priceMinor = priceMap[h.instrument.id]?.closeMinor ?? h.holding.avgCostMinor;
+    final priceMinor =
+        priceMap[h.instrument.id]?.closeMinor ?? h.holding.avgCostMinor;
     final quantity = Decimal.parse(h.holding.quantity);
     final valueNativeMinor = quantity * Decimal.fromInt(priceMinor);
     final valueBase = (valueNativeMinor * rate) / Decimal.fromInt(100);
@@ -199,12 +211,14 @@ Future<List<TopMover>> _computeTopMoversFromCache(
     final changePct = ((current - previous) / previous) * 100.0;
     if (changePct.abs() < 0.01) continue;
 
-    movers.add(TopMover(
-      instrumentName: h.instrument.name,
-      symbol: h.instrument.symbol,
-      currentPrice: Money(minor: current, currency: h.instrument.currency),
-      changePercent: changePct,
-    ));
+    movers.add(
+      TopMover(
+        instrumentName: h.instrument.name,
+        symbol: h.instrument.symbol,
+        currentPrice: Money(minor: current, currency: h.instrument.currency),
+        changePercent: changePct,
+      ),
+    );
   }
 
   movers.sort((a, b) => b.changePercent.abs().compareTo(a.changePercent.abs()));

@@ -36,8 +36,7 @@ class _AddTransactionDialogState extends ConsumerState<AddTransactionDialog> {
     super.dispose();
   }
 
-  int _toMinor(String text) =>
-      ((double.tryParse(text) ?? 0.0) * 100).round();
+  int _toMinor(String text) => ((double.tryParse(text) ?? 0.0) * 100).round();
 
   @override
   Widget build(BuildContext context) {

@@ -53,9 +53,8 @@ class Money extends Equatable {
   }
 
   /// Returns the decimal representation with 10 significant decimal places.
-  Decimal get decimal =>
-      (Decimal.fromInt(minor) / Decimal.fromInt(100))
-          .toDecimal(scaleOnInfinitePrecision: 10);
+  Decimal get decimal => (Decimal.fromInt(minor) / Decimal.fromInt(100))
+      .toDecimal(scaleOnInfinitePrecision: 10);
 
   /// Formats the money according to locale.
   /// Example: format('en_US') → '$10.50'

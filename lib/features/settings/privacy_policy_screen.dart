@@ -60,16 +60,8 @@ class PrivacyPolicyScreen extends StatelessWidget {
               _thirdPartyServices,
               Icons.hub_rounded,
             ),
-            _buildSection(
-              'Your Rights',
-              _yourRights,
-              Icons.gavel_rounded,
-            ),
-            _buildSection(
-              'Contact Us',
-              _contactUs,
-              Icons.mail_outline_rounded,
-            ),
+            _buildSection('Your Rights', _yourRights, Icons.gavel_rounded),
+            _buildSection('Contact Us', _contactUs, Icons.mail_outline_rounded),
             const SizedBox(height: 32),
             Text(
               'This privacy policy is designed for mobile application distribution. For the complete legal version, consult with a privacy law specialist in your jurisdiction.',

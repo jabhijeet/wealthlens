@@ -104,6 +104,5 @@ final activeCurrencyProvider = NotifierProvider<ActiveCurrencyNotifier, String>(
   ActiveCurrencyNotifier.new,
 );
 
-
 // Alias for activeCurrencyProvider if needed for legacy support
 final selectedCurrencyProvider = activeCurrencyProvider;

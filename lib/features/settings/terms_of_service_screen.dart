@@ -163,19 +163,10 @@ class TermsOfServiceScreen extends StatelessWidget {
         const SizedBox(height: 16),
         Text(
           title,
-          style: GoogleFonts.outfit(
-            fontSize: 16,
-            fontWeight: FontWeight.w700,
-          ),
+          style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.w700),
         ),
         const SizedBox(height: 8),
-        Text(
-          content,
-          style: GoogleFonts.sora(
-            fontSize: 14,
-            height: 1.5,
-          ),
-        ),
+        Text(content, style: GoogleFonts.sora(fontSize: 14, height: 1.5)),
       ],
     );
   }

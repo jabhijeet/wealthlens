@@ -1,4 +1,4 @@
-# Copy this file to android/keystore.properties and fill in your values
+# Copy this file to android/key.properties and fill in your values
 # This file should NOT be committed to version control (add to .gitignore)
 
 # Path to your keystore file (relative to android/ directory or absolute path)

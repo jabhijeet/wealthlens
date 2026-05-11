@@ -176,19 +176,14 @@ class HttpLlmService implements LlmService {
         if (hasImages) {
           for (final img in base64Images) {
             parts.add({
-              'inline_data': {
-                'mime_type': 'image/jpeg',
-                'data': img,
-              },
+              'inline_data': {'mime_type': 'image/jpeg', 'data': img},
             });
           }
         }
 
         return {
           'contents': [
-            {
-              'parts': parts,
-            },
+            {'parts': parts},
           ],
           'generationConfig': {
             'temperature': provider.temperature,
@@ -271,7 +266,7 @@ class HttpLlmService implements LlmService {
 
     final headers = _buildHeaders(provider);
     final endpoint = _buildEndpoint(provider, task);
-    
+
     // Log a safe version of the endpoint
     final logEndpoint = provider.kind == LlmKind.gemini
         ? '${endpoint.split('?').first}?key=REDACTED'
@@ -284,8 +279,8 @@ class HttpLlmService implements LlmService {
     final url = Uri.parse(endpoint);
 
     try {
-      final timeout = (task == LlmTask.insights || task == LlmTask.parsing) 
-          ? const Duration(seconds: 120) 
+      final timeout = (task == LlmTask.insights || task == LlmTask.parsing)
+          ? const Duration(seconds: 120)
           : const Duration(seconds: 60);
       final response = await _client
           .post(url, headers: headers, body: jsonEncode(body))
@@ -315,7 +310,8 @@ class HttpLlmService implements LlmService {
       if (e is http.ClientException) {
         errorMessage = 'Network error: Check your internet connection.';
       } else if (e is TimeoutException) {
-        errorMessage = 'Request timed out. The model took too long to respond. Please try again.';
+        errorMessage =
+            'Request timed out. The model took too long to respond. Please try again.';
       } else if (e is FormatException) {
         errorMessage = 'Invalid response from AI provider.';
       } else {
@@ -324,9 +320,13 @@ class HttpLlmService implements LlmService {
 
       // Log as a warning if it's a timeout or network error, otherwise it will be logged by the caller
       if (e is TimeoutException || e is http.ClientException) {
-        errorHandler.handleError(e, context: 'LLM Timeout/Network', stackTrace: stack);
+        errorHandler.handleError(
+          e,
+          context: 'LLM Timeout/Network',
+          stackTrace: stack,
+        );
       }
-      
+
       throw Exception(errorMessage);
     }
   }

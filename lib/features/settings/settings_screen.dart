@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:url_launcher/url_launcher.dart';
+
 import 'package:file_picker/file_picker.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../data/db/daos.dart';
 import '../../providers/providers.dart';
 import '../../core/theme.dart';
 import '../../widgets/llm_status_box.dart';
+
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -130,10 +131,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   hintText: 'Search settings...',
                   prefixIcon: const Icon(Icons.search_rounded, size: 18),
                   filled: true,
-                  fillColor: Theme.of(context)
-                      .colorScheme
-                      .surfaceContainerHighest
-                      .withValues(alpha: 0.5),
+                  fillColor: Theme.of(
+                    context,
+                  ).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
                     borderSide: BorderSide.none,
@@ -164,8 +164,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       _buildNotificationsSection(),
       _buildAiSection(),
       _buildDataSection(),
-      _buildAboutSection(),
-      _buildDangerSection(),
     ];
 
     final filteredSections = sections
@@ -330,59 +328,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
 
-  Widget? _buildDangerSection() {
-    return _buildFilteredSection(
-      title: 'Danger Zone',
-      icon: Icons.warning_amber_rounded,
-      items: [
-        _SettingItem(
-          title: 'Delete All Data',
-          subtitle: 'Permanently wipe all your portfolio data',
-          icon: Icons.delete_forever_rounded,
-          onTap: _showDeleteAllDataDialog,
-        ),
-      ],
-    );
-  }
 
-  Widget? _buildAboutSection() {
-    return _buildFilteredSection(
-      title: 'About',
-      icon: Icons.info_outline,
-      items: [
-        _SettingItem(
-          title: 'Terms of Service',
-          icon: Icons.description,
-          onTap: () => GoRouter.of(context).push('/settings/terms-of-service'),
-        ),
-        _SettingItem(
-          title: 'Privacy Policy',
-          icon: Icons.privacy_tip,
-          onTap: () => GoRouter.of(context).push('/settings/privacy-policy'),
-        ),
-        _SettingItem(
-          title: 'Open Source Licenses',
-          icon: Icons.code,
-          onTap: () =>
-              showLicensePage(context: context, applicationName: 'WealthLens'),
-        ),
-        _SettingItem(
-          title: 'Contact Support',
-          subtitle: 'support@wealthlens.app',
-          icon: Icons.email,
-          onTap: () async {
-            final uri = Uri.parse('mailto:support@wealthlens.app');
-            if (await canLaunchUrl(uri)) await launchUrl(uri);
-          },
-        ),
-        _SettingItem(
-          title: 'App Version',
-          subtitle: 'Latest version installed',
-          icon: Icons.update,
-        ),
-      ],
-    );
-  }
+
 
   Widget? _buildFilteredSection({
     required String title,
@@ -462,7 +409,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               ),
             )
           : null,
-      trailing: item.trailing ??
+      trailing:
+          item.trailing ??
           (item.onTap != null
               ? const Icon(Icons.chevron_right, size: 18)
               : null),
@@ -632,57 +580,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     );
   }
 
-  Future<void> _showDeleteAllDataDialog() async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(
-          'Delete All Data?',
-          style: GoogleFonts.outfit(fontWeight: FontWeight.bold),
-        ),
-        content: const Text(
-          'This will permanently delete all your holdings, transactions, settings, and encryption keys. This action cannot be undone and your data will be lost forever.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: TextButton.styleFrom(foregroundColor: WealthColors.error),
-            child: const Text('Delete Everything'),
-          ),
-        ],
-      ),
-    );
 
-    if (confirmed == true && mounted) {
-      final db = ref.read(appDatabaseProvider);
-      try {
-        await db.deleteAllData();
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('All data has been permanently deleted'),
-              backgroundColor: WealthColors.error,
-            ),
-          );
-          // Invalidate all providers to refresh the UI
-          ref.invalidate(holdingsWithInstrumentsProvider);
-          ref.invalidate(dashboardProvider);
-          // Go back to dashboard
-          context.go('/');
-        }
-      } catch (e) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Failed to delete data: $e')),
-          );
-        }
-      }
-    }
-  }
 
   Future<void> _showClearCacheDialog() async {
     await showDialog<void>(

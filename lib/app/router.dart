@@ -168,7 +168,6 @@ final router = GoRouter(
                   ),
                 ),
               ],
-
             ),
           ],
         ),
@@ -206,10 +205,8 @@ final router = GoRouter(
     GoRoute(
       path: '/activity',
       parentNavigatorKey: rootNavigatorKey,
-      pageBuilder: (context, state) => _buildPageTransition(
-        state: state,
-        child: const ActivityScreen(),
-      ),
+      pageBuilder: (context, state) =>
+          _buildPageTransition(state: state, child: const ActivityScreen()),
     ),
     GoRoute(
       path: '/notifications',

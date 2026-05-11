@@ -49,7 +49,10 @@ class FxRatesScreen extends ConsumerWidget {
         data: (rates) => rates.isEmpty
             ? _buildEmptyState(context)
             : ListView.builder(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
                 itemCount: rates.length,
                 itemBuilder: (context, index) {
                   final rate = rates[index];
@@ -88,9 +91,9 @@ class FxRatesScreen extends ConsumerWidget {
           Text(
             'Rates are automatically fetched when needed\nor you can add them manually.',
             textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: WealthColors.textMuted,
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.bodySmall?.copyWith(color: WealthColors.textMuted),
           ),
         ],
       ),
@@ -133,7 +136,9 @@ class FxRatesScreen extends ConsumerWidget {
                 labelText: 'Rate',
                 hintText: '1.0',
               ),
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
             ),
           ],
         ),
@@ -321,7 +326,8 @@ class _FxRateCard extends ConsumerWidget {
       builder: (context) => AlertDialog(
         title: const Text('Delete FX Rate'),
         content: Text(
-            'Are you sure you want to delete the rate for ${rate.base}/${rate.quote}?'),
+          'Are you sure you want to delete the rate for ${rate.base}/${rate.quote}?',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
@@ -359,11 +365,10 @@ class _FxRateCard extends ConsumerWidget {
           children: [
             TextField(
               controller: rateController,
-              decoration: const InputDecoration(
-                labelText: 'Rate',
+              decoration: const InputDecoration(labelText: 'Rate'),
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
               ),
-              keyboardType:
-                  const TextInputType.numberWithOptions(decimal: true),
               autofocus: true,
             ),
             const SizedBox(height: 8),

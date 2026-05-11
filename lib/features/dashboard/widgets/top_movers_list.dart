@@ -19,9 +19,14 @@ class _TopMoversSection extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Top Movers', style: Theme.of(context).textTheme.titleMedium?.copyWith(
-            fontSize: (Theme.of(context).textTheme.titleMedium?.fontSize ?? 18) * 0.9,
-          )),
+          Text(
+            'Top Movers',
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+              fontSize:
+                  (Theme.of(context).textTheme.titleMedium?.fontSize ?? 18) *
+                  0.9,
+            ),
+          ),
           const SizedBox(height: 14),
           ...movers.map((m) => _TopMoverRow(mover: m)),
         ],

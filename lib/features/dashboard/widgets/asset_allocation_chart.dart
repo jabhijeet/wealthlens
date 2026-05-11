@@ -6,7 +6,8 @@ class _AssetAllocationSection extends StatefulWidget {
   final bool isDark;
 
   @override
-  State<_AssetAllocationSection> createState() => _AssetAllocationSectionState();
+  State<_AssetAllocationSection> createState() =>
+      _AssetAllocationSectionState();
 }
 
 class _AssetAllocationSectionState extends State<_AssetAllocationSection> {
@@ -22,10 +23,19 @@ class _AssetAllocationSectionState extends State<_AssetAllocationSection> {
   Color _getChartColor(int index, int total) {
     if (total == 0) return WealthColors.primary;
     final hue = (index * 360 / total) % 360;
-    return HSLColor.fromAHSL(1.0, hue, 0.65, widget.isDark ? 0.6 : 0.55).toColor();
+    return HSLColor.fromAHSL(
+      1.0,
+      hue,
+      0.65,
+      widget.isDark ? 0.6 : 0.55,
+    ).toColor();
   }
 
-  Widget _buildAllocationPage(Map<String, double> allocationData, double totalValue, {bool useAssetColors = false}) {
+  Widget _buildAllocationPage(
+    Map<String, double> allocationData,
+    double totalValue, {
+    bool useAssetColors = false,
+  }) {
     if (allocationData.isEmpty) return const SizedBox.shrink();
 
     final sortedEntries = allocationData.entries.toList()
@@ -35,11 +45,13 @@ class _AssetAllocationSectionState extends State<_AssetAllocationSection> {
       final index = e.key;
       final entry = e.value;
       final percentage = (entry.value / totalValue) * 100;
-      final color = useAssetColors 
-          ? _getAssetColor(AssetClass.values.firstWhere(
-              (ac) => _formatAssetName(ac) == entry.key,
-              orElse: () => AssetClass.equity,
-            ))
+      final color = useAssetColors
+          ? _getAssetColor(
+              AssetClass.values.firstWhere(
+                (ac) => _formatAssetName(ac) == entry.key,
+                orElse: () => AssetClass.equity,
+              ),
+            )
           : _getChartColor(index, sortedEntries.length);
 
       return PieChartSectionData(
@@ -96,7 +108,9 @@ class _AssetAllocationSectionState extends State<_AssetAllocationSection> {
                             style: GoogleFonts.outfit(
                               fontSize: 12,
                               fontWeight: FontWeight.w800,
-                              color: widget.isDark ? Colors.white : WealthColors.textDark,
+                              color: widget.isDark
+                                  ? Colors.white
+                                  : WealthColors.textDark,
                             ),
                           ),
                         ),
@@ -117,13 +131,15 @@ class _AssetAllocationSectionState extends State<_AssetAllocationSection> {
                 final index = e.key;
                 final entry = e.value;
                 final percentage = (entry.value / totalValue) * 100;
-                final color = useAssetColors 
-                    ? _getAssetColor(AssetClass.values.firstWhere(
-                        (ac) => _formatAssetName(ac) == entry.key,
-                        orElse: () => AssetClass.equity,
-                      ))
+                final color = useAssetColors
+                    ? _getAssetColor(
+                        AssetClass.values.firstWhere(
+                          (ac) => _formatAssetName(ac) == entry.key,
+                          orElse: () => AssetClass.equity,
+                        ),
+                      )
                     : _getChartColor(index, sortedEntries.length);
-                
+
                 return Padding(
                   padding: const EdgeInsets.only(bottom: 8),
                   child: Row(
@@ -148,7 +164,9 @@ class _AssetAllocationSectionState extends State<_AssetAllocationSection> {
                               style: GoogleFonts.sora(
                                 fontSize: 10,
                                 fontWeight: FontWeight.w600,
-                                color: widget.isDark ? Colors.white70 : WealthColors.textDark,
+                                color: widget.isDark
+                                    ? Colors.white70
+                                    : WealthColors.textDark,
                               ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
@@ -175,13 +193,16 @@ class _AssetAllocationSectionState extends State<_AssetAllocationSection> {
     );
   }
 
-
   String _getPageTitle(int index) {
     switch (index) {
-      case 0: return 'Asset Allocation';
-      case 1: return 'Country Allocation';
-      case 2: return 'Currency Allocation';
-      default: return 'Allocation';
+      case 0:
+        return 'Asset Allocation';
+      case 1:
+        return 'Country Allocation';
+      case 2:
+        return 'Currency Allocation';
+      default:
+        return 'Allocation';
     }
   }
 
@@ -199,14 +220,16 @@ class _AssetAllocationSectionState extends State<_AssetAllocationSection> {
       decoration: BoxDecoration(
         color: widget.isDark ? WealthColors.cardDark : WealthColors.cardLight,
         borderRadius: BorderRadius.circular(20),
-        gradient: widget.isDark ? LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            WealthColors.cardDark,
-            WealthColors.cardDarkElevated.withValues(alpha: 0.8),
-          ],
-        ) : null,
+        gradient: widget.isDark
+            ? LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  WealthColors.cardDark,
+                  WealthColors.cardDarkElevated.withValues(alpha: 0.8),
+                ],
+              )
+            : null,
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: widget.isDark ? 0.2 : 0.05),
@@ -215,7 +238,9 @@ class _AssetAllocationSectionState extends State<_AssetAllocationSection> {
           ),
         ],
         border: Border.all(
-          color: widget.isDark ? WealthColors.borderDark : WealthColors.borderLight,
+          color: widget.isDark
+              ? WealthColors.borderDark
+              : WealthColors.borderLight,
         ),
       ),
       child: Column(
@@ -225,13 +250,16 @@ class _AssetAllocationSectionState extends State<_AssetAllocationSection> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                _getPageTitle(_currentPage),
-                style: GoogleFonts.outfit(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: -0.2,
-                ),
-              ).animate(key: ValueKey(_currentPage)).fadeIn().slideX(begin: -0.1, end: 0),
+                    _getPageTitle(_currentPage),
+                    style: GoogleFonts.outfit(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: -0.2,
+                    ),
+                  )
+                  .animate(key: ValueKey(_currentPage))
+                  .fadeIn()
+                  .slideX(begin: -0.1, end: 0),
               Row(
                 children: List.generate(3, (index) {
                   return AnimatedContainer(
@@ -262,9 +290,16 @@ class _AssetAllocationSectionState extends State<_AssetAllocationSection> {
                 });
               },
               children: [
-                _buildAllocationPage(assetMap, totalValue, useAssetColors: true),
+                _buildAllocationPage(
+                  assetMap,
+                  totalValue,
+                  useAssetColors: true,
+                ),
                 _buildAllocationPage(widget.data.countryAllocation, totalValue),
-                _buildAllocationPage(widget.data.currencyAllocation, totalValue),
+                _buildAllocationPage(
+                  widget.data.currencyAllocation,
+                  totalValue,
+                ),
               ],
             ),
           ),
@@ -273,7 +308,6 @@ class _AssetAllocationSectionState extends State<_AssetAllocationSection> {
     );
   }
 }
-
 
 class _AssetBreakdownList extends StatelessWidget {
   const _AssetBreakdownList({required this.data});
