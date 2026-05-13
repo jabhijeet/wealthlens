@@ -80,7 +80,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
               Icons.gavel_rounded,
             ),
             _buildSection(
-              '6. Children\'s Privacy',
+              "6. Children's Privacy",
               _childrenPrivacy,
               Icons.child_care_rounded,
             ),
