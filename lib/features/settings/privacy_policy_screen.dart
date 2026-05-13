@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../core/theme.dart';
 
 class PrivacyPolicyScreen extends StatelessWidget {
@@ -7,8 +8,6 @@ class PrivacyPolicyScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final currentDate = DateTime.now().toLocal().toString().split(' ')[0];
-
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -21,52 +20,133 @@ class PrivacyPolicyScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // ─── Header ──────────────────────────────────────────────────
             Text(
               'WealthLens Privacy Policy',
               style: GoogleFonts.outfit(
-                fontSize: 21,
+                fontSize: 22,
                 fontWeight: FontWeight.w800,
                 letterSpacing: -0.5,
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 8),
             Text(
-              'Last Updated: $currentDate',
+              'Last Updated: May 13, 2026',
               style: GoogleFonts.sora(
                 fontSize: 12,
                 fontStyle: FontStyle.italic,
                 color: WealthColors.textMuted,
               ),
             ),
+            const SizedBox(height: 20),
+            Text(
+              'WealthLens ("we," "our," or "us") is committed to protecting your privacy. '
+              'This Privacy Policy explains how we collect, use, disclose, and safeguard '
+              'your information when you use our mobile application. By using WealthLens, '
+              'you agree to the data practices described in this policy.',
+              style: TextStyle(
+                fontSize: 14,
+                height: 1.6,
+                color: Colors.grey.shade700,
+              ),
+            ),
+
             const SizedBox(height: 24),
-            _buildIntroduction(),
+
+            // ─── Sections ────────────────────────────────────────────────
             _buildSection(
-              'Information We Collect',
+              '1. Information We Collect',
               _informationWeCollect,
-              Icons.data_usage_rounded,
+              Icons.description_outlined,
             ),
             _buildSection(
-              'How We Use Information',
+              '2. How We Use Your Information',
               _howWeUseInformation,
               Icons.settings_suggest_rounded,
             ),
             _buildSection(
-              'Data Storage and Security',
+              '3. Data Storage & Security',
               _dataStorageAndSecurity,
               Icons.security_rounded,
             ),
             _buildSection(
-              'Third-Party Services',
+              '4. Third-Party Services & Disclosures',
               _thirdPartyServices,
               Icons.hub_rounded,
             ),
-            _buildSection('Your Rights', _yourRights, Icons.gavel_rounded),
-            _buildSection('Contact Us', _contactUs, Icons.mail_outline_rounded),
-            const SizedBox(height: 32),
-            Text(
-              'This privacy policy is designed for mobile application distribution. For the complete legal version, consult with a privacy law specialist in your jurisdiction.',
-              style: GoogleFonts.sora(fontSize: 12, color: Colors.orange),
+            _buildSection(
+              '5. Your Data Rights & Choices',
+              _yourRights,
+              Icons.gavel_rounded,
             ),
+            _buildSection(
+              '6. Children\'s Privacy',
+              _childrenPrivacy,
+              Icons.child_care_rounded,
+            ),
+            _buildSection(
+              '7. Changes to This Policy',
+              _changesToPolicy,
+              Icons.update_rounded,
+            ),
+            _buildSection(
+              '8. Contact Us',
+              _contactUs,
+              Icons.mail_outline_rounded,
+            ),
+
+            const SizedBox(height: 16),
+
+            // ─── View Online Link ────────────────────────────────────────
+            GestureDetector(
+              onTap: () => _launchUrl('https://wealthlens.app/privacy'),
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: WealthColors.primary.withValues(alpha: 0.08),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(
+                    color: WealthColors.primary.withValues(alpha: 0.2),
+                  ),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.open_in_browser_rounded, size: 16, color: WealthColors.primary),
+                    const SizedBox(width: 8),
+                    Text(
+                      'View full policy online',
+                      style: GoogleFonts.sora(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: WealthColors.primary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 16),
+
+            // ─── Disclaimer ──────────────────────────────────────────────
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.orange.withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.orange.withValues(alpha: 0.3)),
+              ),
+              child: Text(
+                'This privacy policy is provided for informational purposes. '
+                'For complete legal compliance, consult with a qualified privacy law specialist '
+                'regarding GDPR, CCPA, LGPD, PDPA, PDPB, and other applicable regulations.',
+                style: GoogleFonts.sora(fontSize: 11, color: Colors.orange.shade800, height: 1.5),
+              ),
+            ),
+
             const SizedBox(height: 48),
           ],
         ),
@@ -74,35 +154,9 @@ class PrivacyPolicyScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildIntroduction() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Introduction',
-          style: GoogleFonts.plusJakartaSans(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-            color: WealthColors.primary,
-          ),
-        ),
-        const SizedBox(height: 12),
-        Text(
-          'WealthLens is a local-first personal finance tracker. We prioritize your privacy by keeping your sensitive financial data on your device, protected by industry-standard encryption. This policy explains what data we process and how we protect it.',
-          style: TextStyle(
-            fontSize: 15,
-            height: 1.5,
-            color: Colors.grey.shade700,
-          ),
-        ),
-        const SizedBox(height: 24),
-      ],
-    );
-  }
-
   Widget _buildSection(String title, String content, IconData icon) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 28.0),
+      padding: const EdgeInsets.only(bottom: 24.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -117,11 +171,13 @@ class PrivacyPolicyScreen extends StatelessWidget {
                 child: Icon(icon, size: 20, color: WealthColors.primary),
               ),
               const SizedBox(width: 12),
-              Text(
-                title,
-                style: GoogleFonts.plusJakartaSans(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
+              Expanded(
+                child: Text(
+                  title,
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
             ],
@@ -139,46 +195,100 @@ class PrivacyPolicyScreen extends StatelessWidget {
       ),
     );
   }
+
+  Future<void> _launchUrl(String url) async {
+    final uri = Uri.parse(url);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    }
+  }
 }
 
+// ─── Policy Content Strings ───────────────────────────────────────────────────
+
 const String _informationWeCollect = '''
-• Financial Data: We process investment holdings, transactions, and performance data which you enter manually or import.
-• Document Data: When you use the AI Document Parser, we process images or text from your financial statements to extract investment details.
-• Security Data: We use your device's biometric systems (FaceID/TouchID) for authentication if enabled. We do not store your actual biometric data.
-• Usage Data: We collect anonymized information about how you use the app to improve performance and user experience.
+What You Provide:
+• Investment holdings — asset names, quantities, purchase prices, dates, and categories (stocks, mutual funds, crypto, fixed deposits, real estate, etc.) that you manually enter or import.
+• Transaction records — buy/sell transactions, dividend payments, interest credits, and systematic investment plan details.
+• Document uploads — when you use the AI Document Parser, we process images (photos/scans) or text extracted from your financial statements.
+
+Automatically Collected:
+• Usage data — anonymized, aggregated information about how you interact with the app. This is stored locally only and is not transmitted to external analytics servers.
+• Device information — device model, OS version, and app version for debugging.
+
+We DO NOT Collect:
+• Personal identifiers — we do not require your name, email, phone, or address.
+• Bank credentials — we never connect to your bank or brokerage accounts.
+• Location data — no precise geolocation is collected.
+• Biometric data — biometric lock is handled entirely by your device; we never receive or store biometric data.
 ''';
 
 const String _howWeUseInformation = '''
-• Service Provision: To calculate your portfolio value, performance metrics (XIRR), and generate financial insights.
-• AI Insights: To provide intelligent analysis of your holdings using Large Language Models (LLMs).
-• Local Security: To encrypt and lock your data using device-level security features.
-• Optimization: To identify and fix technical issues and improve the app's features.
+• Core functionality — calculate portfolio value, asset allocation, performance metrics (XIRR, CAGR), and generate financial summaries on your device.
+• AI-powered insights — provide intelligent portfolio analysis and document parsing using LLMs. Only relevant, anonymized portfolio summaries or document text are sent.
+• Market data — fetch current asset prices from public providers. Only asset symbols are shared.
+• Notifications — send local push notifications for price alerts, maturity reminders, premium due dates, and other events you configure.
+• Security — encrypt your data, authenticate via biometric lock, and protect against unauthorized access.
+• Improvement — identify bugs, crashes, and performance issues to improve the app.
 ''';
 
 const String _dataStorageAndSecurity = '''
-• 100% Local Storage: All your sensitive financial data is stored directly on your device. We do not maintain remote databases of your personal holdings.
-• SQLCipher Encryption: Your local database is encrypted at rest using AES-256 via SQLCipher.
-• Secure Key Management: The 256-bit encryption key is unique to your device and is stored in your system's Secure Enclave (iOS Keychain / Android Keystore).
-• No Institution Access: WealthLens does not connect directly to your bank accounts or brokerage accounts. You remain in full control of the data you input.
+Local-First Architecture:
+All your sensitive financial data is stored exclusively on your device. We do not maintain remote databases or cloud backups of your personal portfolio data.
+
+Encryption:
+• At Rest — your local database is encrypted using AES-256 via SQLCipher.
+• Key Management — the 256-bit encryption key is unique to your device and stored in your system's hardware-backed Secure Enclave (iOS Keychain / Android Keystore).
+• Backups — exported backup files are AES-256 encrypted. You control the encryption password.
+
+Data Retention:
+Your data remains on your device until you choose to delete it. Use "Delete All Data" in Settings to permanently wipe the database and encryption keys.
 ''';
 
 const String _thirdPartyServices = '''
-• LLM Providers: We integrate with providers like OpenAI, Anthropic, and Google Gemini to provide insights and document parsing. 
-    - Insights: Only relevant portfolio summaries (anonymized) are sent to the provider.
-    - Parsing: Raw text or images you provide are sent for extraction. No personal identifiers are explicitly shared unless present in the documents.
-• Data Sources: We fetch market prices from public providers (e.g., Yahoo Finance). Only asset symbols are shared to retrieve current valuations.
-• Local Analytics: We track basic usage patterns locally. No data is currently transmitted to third-party analytics servers.
+LLM Providers (AI Features):
+When you use AI features, data is sent to the LLM provider you configure. Supported providers:
+• OpenAI (GPT models) — openai.com/privacy
+• Anthropic (Claude models) — anthropic.com/privacy
+• Google (Gemini models) — policies.google.com/privacy
+
+You choose the provider and supply your own API key. Data sent is subject to each provider's privacy policy. Only anonymized portfolio summaries or document text you submit are transmitted.
+
+Market Data Providers:
+• Yahoo Finance — asset symbols sent to retrieve prices
+• CoinGecko — crypto symbols sent to retrieve prices
+• Frankfurter API — currency codes sent for FX rates
+
+Legal Disclosure:
+We do not sell, trade, or rent your personal data. We may disclose information only if required by law or valid legal requests. Since data is stored locally, our ability to produce it is limited.
 ''';
 
 const String _yourRights = '''
-• Data Access & Portability: You can view all your data within the app and export encrypted backups for your own records.
-• Data Erasure: You can wipe all data from your device at any time using the "Delete All Data" option in Settings. This permanently deletes the database and encryption keys.
-• Opt-out: You can disable AI features, biometrics, and analytics at any time in the settings.
+Depending on your jurisdiction, you may have the following rights:
+
+• Access & Portability — view all your data in the app and export encrypted backups.
+• Deletion (Right to Erasure) — permanently delete all data using "Delete All Data" in Settings. This is irreversible.
+• Opt-Out of AI Features — disable AI insights and document parsing in Settings.
+• Opt-Out of Notifications — manage each notification preference individually.
+• Biometric Lock — enable or disable biometric authentication at any time.
+• Privacy Mode — mask sensitive amounts on screen.
+
+Since all data is stored locally on your device, you have full and immediate control over your information.
+''';
+
+const String _childrenPrivacy = '''
+WealthLens is not intended for use by children under the age of 13. We do not knowingly collect personal information from children under 13. If you are a parent or guardian and believe your child has provided us with information, please contact us. Since all data is stored locally on the device, you can delete it directly through the app's Settings.
+''';
+
+const String _changesToPolicy = '''
+We may update this Privacy Policy from time to time. We will notify you of any changes by posting the new Privacy Policy within the app and updating the "Last Updated" date. You are advised to review this policy periodically. Continued use of the app after changes constitutes acceptance of the updated policy.
 ''';
 
 const String _contactUs = '''
-If you have any questions about this Privacy Policy or our data practices, please contact us at:
+If you have any questions about this Privacy Policy or our data practices, please contact us:
 
 Email: privacy@wealthlens.app
 Website: https://wealthlens.app/privacy
+
+We aim to respond to all inquiries within 5 business days.
 ''';

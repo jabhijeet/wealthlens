@@ -431,8 +431,46 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         ),
         const SizedBox(height: 4),
         Text(
-          '© 2024 WealthLens Team',
+          '© 2026 WealthLens',
           style: GoogleFonts.sora(fontSize: 12, color: WealthColors.textMuted),
+        ),
+        const SizedBox(height: 12),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            GestureDetector(
+              onTap: () => context.push('/settings/privacy-policy'),
+              child: Text(
+                'Privacy Policy',
+                style: GoogleFonts.sora(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                  color: WealthColors.primary,
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: Text(
+                '·',
+                style: GoogleFonts.sora(
+                  fontSize: 12,
+                  color: WealthColors.textMuted,
+                ),
+              ),
+            ),
+            GestureDetector(
+              onTap: () => context.push('/settings/terms-of-service'),
+              child: Text(
+                'Terms of Service',
+                style: GoogleFonts.sora(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                  color: WealthColors.primary,
+                ),
+              ),
+            ),
+          ],
         ),
       ],
     );
