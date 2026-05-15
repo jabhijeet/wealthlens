@@ -3,7 +3,7 @@
 [![Flutter](https://img.shields.io/badge/Flutter-3.11.4+-02569B?logo=flutter&logoColor=white)](https://flutter.dev)
 [![Riverpod](https://img.shields.io/badge/State-Riverpod-001F3F?logo=dart&logoColor=white)](https://riverpod.dev)
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
-[![Version](https://img.shields.io/badge/Version-1.0.0+2-4CAF50)](RELEASENOTES.md)
+[![Version](https://img.shields.io/badge/Version-1.0.1+3-4CAF50)](RELEASENOTES.md)
 
 **WealthLens** is a premium, privacy-first personal finance and investment portfolio tracker built with Flutter. It provides a unified view of your net worth across asset classes, countries, and currencies, powered by local-first encryption and anonymized AI insights.
 

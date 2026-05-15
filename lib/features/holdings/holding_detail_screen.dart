@@ -14,6 +14,8 @@ import 'package:decimal/decimal.dart';
 import '../../core/theme.dart';
 import '../../common/widgets/money_text.dart';
 import '../../utils/currency_formatter.dart';
+import 'providers/holdings_market_data_provider.dart';
+
 
 class HoldingDetailScreen extends ConsumerStatefulWidget {
   const HoldingDetailScreen({super.key, required this.holdingId});
@@ -26,6 +28,7 @@ class HoldingDetailScreen extends ConsumerStatefulWidget {
 
 class _HoldingDetailScreenState extends ConsumerState<HoldingDetailScreen> {
   bool _isEditing = false;
+  bool _isFetchingPrice = false;
 
   // Controllers
   late TextEditingController _nameController;
@@ -295,6 +298,9 @@ class _HoldingDetailScreenState extends ConsumerState<HoldingDetailScreen> {
 
           const SizedBox(height: 12),
           _buildMarketValueCard(context, ref, item, bookValue, isDark),
+
+          const SizedBox(height: 12),
+          _buildLatestPriceCard(context, ref, item, isDark),
 
           if (isDifferentCurrency) ...[
             const SizedBox(height: 12),
@@ -761,7 +767,224 @@ class _HoldingDetailScreenState extends ConsumerState<HoldingDetailScreen> {
     );
   }
 
+  Widget _buildLatestPriceCard(
+    BuildContext context,
+    WidgetRef ref,
+    HoldingWithInstrument item,
+    bool isDark,
+  ) {
+    final instrument = item.instrument;
+    final hasPriceable =
+        (instrument.isin?.isNotEmpty ?? false) ||
+        (instrument.symbol?.isNotEmpty ?? false) ||
+        (instrument.exchange?.isNotEmpty ?? false);
+
+    if (!hasPriceable) return const SizedBox.shrink();
+
+    final snapshotAsync = ref.watch(
+      _latestPriceSnapshotProvider(instrument.id),
+    );
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: isDark ? WealthColors.cardDark : WealthColors.cardLight,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: isDark ? WealthColors.borderDark : WealthColors.borderLight,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: WealthColors.primary.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(
+                  Icons.show_chart_rounded,
+                  color: WealthColors.primary,
+                  size: 18,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Text(
+                'Market Price',
+                style: Theme.of(context).textTheme.titleSmall,
+              ),
+              const Spacer(),
+              if (_isFetchingPrice)
+                const SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: WealthColors.primary,
+                  ),
+                )
+              else
+                IconButton(
+                  icon: const Icon(
+                    Icons.refresh_rounded,
+                    size: 20,
+                    color: WealthColors.primary,
+                  ),
+                  tooltip: 'Fetch latest price',
+                  visualDensity: VisualDensity.compact,
+                  onPressed: () async {
+                    setState(() => _isFetchingPrice = true);
+                    try {
+                      final priceService = ref.read(priceServiceProvider);
+                      await priceService.forceRefreshPrice(instrument);
+                      ref
+                        ..invalidate(
+                          _latestPriceSnapshotProvider(instrument.id),
+                        )
+                        ..invalidate(holdingsMarketDataProvider);
+                    } catch (_) {
+                      if (!context.mounted) return;
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Could not fetch price. Check symbol/ISIN.'),
+                        ),
+                      );
+                    } finally {
+                      if (mounted) setState(() => _isFetchingPrice = false);
+                    }
+                  },
+                ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          snapshotAsync.when(
+            data: (snapshot) {
+              if (snapshot == null) {
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'No price data yet',
+                      style: GoogleFonts.sora(
+                        fontSize: 13,
+                        color: WealthColors.textMuted,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Tap refresh to fetch from market data',
+                      style: GoogleFonts.sora(
+                        fontSize: 11,
+                        color: WealthColors.textMuted.withValues(alpha: 0.7),
+                      ),
+                    ),
+                  ],
+                );
+              }
+
+              final price = Money(
+                minor: snapshot.closeMinor,
+                currency: snapshot.currency,
+              );
+              final priceDate = snapshot.date.toLocal();
+              final now = DateTime.now();
+              final diff = now.difference(priceDate);
+              final ageStr = diff.inMinutes < 60
+                  ? '${diff.inMinutes}m ago'
+                  : diff.inHours < 24
+                  ? '${diff.inHours}h ago'
+                  : '${priceDate.day}/${priceDate.month}/${priceDate.year}';
+              final isStale = diff.inHours >= 24;
+
+              return Column(
+                children: [
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Last Price',
+                              style: Theme.of(context).textTheme.labelMedium,
+                            ),
+                            const SizedBox(height: 4),
+                            MoneyText(
+                              money: price,
+                              style: GoogleFonts.outfit(
+                                fontSize: 22,
+                                fontWeight: FontWeight.w800,
+                                color: WealthColors.primary,
+                                letterSpacing: -0.5,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Row(
+                            children: [
+                              Icon(
+                                isStale
+                                    ? Icons.warning_amber_rounded
+                                    : Icons.check_circle_rounded,
+                                size: 12,
+                                color: isStale
+                                    ? WealthColors.warning
+                                    : WealthColors.success,
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                ageStr,
+                                style: GoogleFonts.sora(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w600,
+                                  color: isStale
+                                      ? WealthColors.warning
+                                      : WealthColors.success,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            'via ${snapshot.source}',
+                            style: GoogleFonts.sora(
+                              fontSize: 10,
+                              color: WealthColors.textMuted,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ],
+              );
+            },
+            loading: () => const SizedBox(
+              height: 40,
+              child: Center(
+                child: LinearProgressIndicator(color: WealthColors.primary),
+              ),
+            ),
+            error: (_, e2) => Text(
+              'Unable to load price',
+              style: GoogleFonts.sora(color: WealthColors.textMuted),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildFundamentals(WidgetRef ref, Instrument instrument, bool isDark) {
+
     if (instrument.assetClass != AssetClass.equity) {
       return const SizedBox.shrink();
     }

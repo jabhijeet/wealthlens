@@ -587,13 +587,18 @@ class _SectionHeader extends StatelessWidget {
   }
 }
 
-class _HoldingCard extends StatelessWidget {
+class _HoldingCard extends ConsumerWidget {
   const _HoldingCard({required this.item, required this.isDark});
   final EnrichedHolding item;
   final bool isDark;
 
+  bool get _hasPriceable =>
+      (item.instrument.isin?.isNotEmpty ?? false) ||
+      (item.instrument.symbol?.isNotEmpty ?? false) ||
+      (item.instrument.exchange?.isNotEmpty ?? false);
+
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final instrument = item.instrument;
 
     return InkWell(
@@ -677,6 +682,13 @@ class _HoldingCard extends StatelessWidget {
                     ],
                   ),
                 ),
+                // Latest price on the right
+                if (_hasPriceable && item.latestPrice != null)
+                  _LatestPriceChip(
+                    price: item.latestPrice!,
+                    date: item.latestPriceDate,
+                    compact: true,
+                  ),
               ],
             ),
             const SizedBox(height: 6),
@@ -732,6 +744,73 @@ class _HoldingCard extends StatelessWidget {
     );
   }
 }
+
+class _LatestPriceChip extends StatelessWidget {
+  const _LatestPriceChip({
+    required this.price,
+    this.date,
+    this.compact = false,
+  });
+  final Money price;
+  final DateTime? date;
+  final bool compact;
+
+  String _formatDate(DateTime dt) {
+    final now = DateTime.now();
+    final diff = now.difference(dt);
+    if (diff.inMinutes < 60) return '${diff.inMinutes}m ago';
+    if (diff.inHours < 24) return '${diff.inHours}h ago';
+    return '${dt.day}/${dt.month}/${dt.year}';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Container(
+      padding: EdgeInsets.symmetric(
+        horizontal: compact ? 6 : 8,
+        vertical: compact ? 2 : 4,
+      ),
+      decoration: BoxDecoration(
+        color: WealthColors.primary.withValues(alpha: isDark ? 0.15 : 0.08),
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(
+          color: WealthColors.primary.withValues(alpha: 0.2),
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(
+            Icons.show_chart_rounded,
+            size: 10,
+            color: WealthColors.primary,
+          ),
+          const SizedBox(width: 4),
+          MoneyText(
+            money: price,
+            style: GoogleFonts.sora(
+              fontSize: compact ? 10 : 11,
+              fontWeight: FontWeight.w600,
+              color: WealthColors.primary,
+            ),
+          ),
+          if (!compact && date != null) ...[
+            const SizedBox(width: 4),
+            Text(
+              '· ${_formatDate(date!)}',
+              style: GoogleFonts.sora(
+                fontSize: 10,
+                color: WealthColors.primary.withValues(alpha: 0.7),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
 
 // Unified empty state is now used instead of local _EmptyState
 

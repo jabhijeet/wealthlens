@@ -1,5 +1,10 @@
 # Release Notes
 
+## 1.0.1+3 (2026-05-14)
+
+- **Fix**: Resolved a critical app crash on Android startup caused by an outdated `WorkManagerInitializer` configuration in `AndroidManifest.xml`.
+- **Optimization**: Cleaned up manual Android manifest configurations to rely on modern library initialization.
+
 ## 1.0.0+2 (2026-05-13)
 
 - Bumped Android version code from 1 to 2 for Play Store publishing (version code 1 was already consumed).

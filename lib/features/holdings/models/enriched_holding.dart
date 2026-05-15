@@ -9,12 +9,14 @@ class EnrichedHolding {
     required this.valueInNative,
     required this.valueInBase,
     this.latestPrice,
+    this.latestPriceDate,
   });
 
   final HoldingWithInstrument holdingWithInstrument;
   final Money valueInNative;
   final Money valueInBase;
   final Money? latestPrice;
+  final DateTime? latestPriceDate;
 
   Holding get holding => holdingWithInstrument.holding;
   Instrument get instrument => holdingWithInstrument.instrument;

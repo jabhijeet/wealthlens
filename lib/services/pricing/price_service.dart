@@ -44,6 +44,26 @@ class PriceService {
     }
   }
 
+  /// Force fetch a fresh price, bypassing the cache entirely.
+  Future<PriceSnapshot?> forceRefreshPrice(Instrument instrument) async {
+    try {
+      final price = await _router.quote(instrument);
+      final now = DateTime.now();
+      await _dao.insertOrUpdate(
+        PriceSnapshotsCompanion(
+          instrumentId: Value(instrument.id),
+          date: Value(now),
+          closeMinor: Value(price.minor),
+          currency: Value(price.currency),
+          source: Value(_getSourceName(instrument.assetClass)),
+        ),
+      );
+      return await _dao.getLatest(instrument.id);
+    } catch (e) {
+      return await _dao.getLatest(instrument.id); // return stale if fetch fails
+    }
+  }
+
   /// Batch fetch prices for multiple instruments.
   Future<Map<String, Money>> getLatestPrices(
     List<Instrument> instruments,

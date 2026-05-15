@@ -1,7 +1,7 @@
 name: wealthlens
 description: "WealthLens - Personal Finance & Investment Portfolio Tracker"
 publish_to: 'none'
-version: 1.0.0+2
+version: 1.0.1+3
 
 environment:
   sdk: ^3.11.4
@@ -40,7 +40,8 @@ dependencies:
   path_provider: ^2.1.5
   rational: ^2.2.3
   riverpod_annotation: ^4.0.2
-  sqlcipher_flutter_libs: ^0.7.0+eol
+  sqlcipher_flutter_libs: ^0.6.0
+  sqlite3: 2.6.0
   syncfusion_flutter_pdf: ^33.2.4
   url_launcher: ^6.3.2
   uuid: ^4.5.3

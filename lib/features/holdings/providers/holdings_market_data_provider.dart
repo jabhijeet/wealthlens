@@ -43,6 +43,7 @@ final holdingsMarketDataProvider = FutureProvider<List<EnrichedHolding>>((
     final latestPrice = snapshot != null
         ? Money(minor: snapshot.closeMinor, currency: snapshot.currency)
         : null;
+    final latestPriceDate = snapshot?.date;
 
     // Effective price for valuation (fallback to avg cost if no market price)
     final effectivePriceMinor = snapshot?.closeMinor ?? holding.avgCostMinor;
@@ -67,6 +68,7 @@ final holdingsMarketDataProvider = FutureProvider<List<EnrichedHolding>>((
         valueInNative: valueInNative,
         valueInBase: valueInBase,
         latestPrice: latestPrice,
+        latestPriceDate: latestPriceDate,
       ),
     );
   }
